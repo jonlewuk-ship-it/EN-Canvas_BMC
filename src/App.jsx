@@ -92,7 +92,7 @@ const DEMO = {
 /* ─── BIM SVG BACKGROUND ────────────────────────────────── */
 function BimBackground() {
   return (
-    <div style={{ position:"fixed", inset:0, zIndex:0, pointerEvents:"none", overflow:"hidden" }}>
+    <div style={{ position:"fixed", inset:0, zIndex:-1, pointerEvents:"none", overflow:"hidden" }}>
       <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice"
            style={{ width:"100%", height:"100%" }} xmlns="http://www.w3.org/2000/svg">
         <defs>
