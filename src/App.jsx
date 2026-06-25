@@ -247,19 +247,19 @@ function HeroHeader({ kpis, pct, drawerOpen, onToggleDrawer, onAddEntry }) {
               <span style={{
                 fontSize:22, fontWeight:900, color:Y,
                 letterSpacing:"-0.5px", lineHeight:1,
-              }}>Strategy</span>
+              }}>AEC/BIM Opportunity Mapping System</span>
               <span style={{
                 fontSize:10, fontWeight:600, color:"rgba(255,209,0,0.40)",
                 background:"rgba(255,209,0,0.1)", border:"1px solid rgba(255,209,0,0.30)",
                 padding:"2px 7px", borderRadius:20, fontFamily:"monospace",
                 letterSpacing:"0.5px", alignSelf:"center",
-              }}>v2.0</span>
+              }}>v2.1</span>
             </div>
             <div style={{
               fontSize:9, color:"rgba(255,255,255,0.65)", fontFamily:"monospace",
               letterSpacing:"2px", textTransform:"uppercase", marginTop:3,
             }}>
-              Business Model Canvas · AECO / BIM Industry
+              Strategic Intelligence Canvas · AECO / BIM Industry
             </div>
           </div>
         </div>
@@ -307,7 +307,7 @@ function HeroHeader({ kpis, pct, drawerOpen, onToggleDrawer, onAddEntry }) {
               <circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" strokeWidth="1.3"/>
               <path d="M6.5 4v2.5l1.8 1.8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
             </svg>
-            Story View
+            Story Tracker
           </button>
           <button
             onClick={onAddEntry}
