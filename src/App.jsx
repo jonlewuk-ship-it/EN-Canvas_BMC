@@ -205,6 +205,8 @@ function Chip({ entry, onEdit, onDelete, onSegClick, isSegSection, inlineWidth }
         boxShadow: hasLinks ? `0 0 0 1px ${cc}1a` : "none",
         transition:"background .15s, border-color .15s",
         width: inlineWidth ? "auto" : "100%",
+        boxSizing: "border-box", // Blocks border
+        overflowX: "hidden",      // cambia chip style
       }}
     >
       <div style={{ display:"flex", alignItems:"center", gap:4 }}>
@@ -270,17 +272,16 @@ function Chip({ entry, onEdit, onDelete, onSegClick, isSegSection, inlineWidth }
 function SectionCard({ sid, entries, onAdd, onEdit, onDelete, onSegClick, wide }) {
   const s = SECTIONS[sid];
   return (
-    <div style={{
-  flex:1, 
-  overflowY:"auto",          // Keep this
-  display:"flex",
-  flexDirection:"column",    // Change to "column" if it's not already
-  flexWrap:"nowrap",         // Prevent horizontal scrolling
-  gap:3, 
-  paddingRight:2, 
-  alignContent:"flex-start",
-  maxHeight: "350px"         // ADD THIS to stop the box from growing
+<div style={{
+  flex: 1,
+  overflowY: "auto",      // Mantieni solo lo scroll verticale
+  overflowX: "hidden",    // FORZA HIDDEN per eliminare la barra orizzontale
+  display: "flex",
+  flexDirection: "column",
+  width: "100%",          // Assicura che occupi tutto lo spazio ma non di più
+  boxSizing: "border-box" // Fondamentale per il calcolo della larghezza
 }}>
+ 
       {/* accent stripe */}
       <div style={{ position:"absolute", top:0, left:0, right:0, height:3, background:s.accent, opacity:.85, zIndex:2 }}/>
       {/* dot grid */}
