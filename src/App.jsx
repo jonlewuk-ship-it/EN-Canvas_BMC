@@ -93,7 +93,7 @@ const DEMO = {
 function BimBackground() {
   return (
     <div style={{ position:"fixed", inset:0, zIndex:-1, pointerEvents:"none", overflow:"hidden" }}>
-      <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice"
+      // <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice"
            style={{ width:"100%", height:"100%" }} xmlns="http://www.w3.org/2000/svg">
         <defs>
           <radialGradient id="bg1" cx="50%" cy="40%" r="70%">
@@ -110,6 +110,7 @@ function BimBackground() {
           </radialGradient>
           <filter id="gf"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
         </defs>
+       
         <rect width="1600" height="900" fill="url(#bg1)"/>
         <ellipse cx="800" cy="380" rx="650" ry="420" fill="url(#gy)"/>
         <ellipse cx="150" cy="720" rx="380" ry="300" fill="url(#gb)"/>
