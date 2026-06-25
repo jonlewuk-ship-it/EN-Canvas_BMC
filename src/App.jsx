@@ -733,10 +733,12 @@ export default function App() {
           {/* BMC GRID */}
 <div style={{ 
   display:"grid", 
-  gridTemplateColumns:"0.9fr 0.9fr 1fr 0.9fr 0.9fr", 
+  gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
   gridTemplateRows:"minmax(220px,1fr) minmax(220px,1fr) minmax(150px,auto)", 
-  gap:8,
-  minWidth: 0 // Prevents the grid from forcing a horizontal scroll bar
+  gap: 8,
+  width: "100%",        // Si assicura che il grid occupi esattamente il 100% disponibile
+  boxSizing: "border-box", // Evita che il padding o bordi aumentino la dimensione
+  minWidth: 0           // Fondamentale: permette al grid di rimpicciolirsi se serve
 }}>
             {/* KP */}
             <div style={{ gridColumn:"1/2", gridRow:"1/3" }}>
