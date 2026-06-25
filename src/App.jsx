@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-
+ 
 /* ─── PALETTE & CONSTANTS ───────────────────────────────── */
 const Y = "#ffd100";
 const CATS = [
