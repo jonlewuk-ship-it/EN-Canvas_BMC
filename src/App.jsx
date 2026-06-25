@@ -730,10 +730,9 @@ export default function App() {
           </div>
 
           {/* BMC GRID */}
-          // Line 733
 <div style={{ 
   display:"grid", 
-  gridTemplateColumns:"1fr 1fr 1.1fr 1fr 1fr", 
+  gridTemplateColumns:"0.9fr 0.9fr 1fr 0.9fr 0.9fr", 
   gridTemplateRows:"minmax(220px,1fr) minmax(220px,1fr) minmax(150px,auto)", 
   gap:8,
   minWidth: 0 // Prevents the grid from forcing a horizontal scroll bar
