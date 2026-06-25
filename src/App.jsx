@@ -224,18 +224,36 @@ function Chip({ entry, onEdit, onDelete, onSegClick, isSegSection, inlineWidth }
           }}>⟶ {entry.segs.length} seg</span>
         )}
         <div style={{ flex:1 }}/>
+        
+        {/* EDIT BUTTON (Updated for Visibility) */}
         <button
           onClick={(e)=>{ e.stopPropagation(); onEdit(); }}
           title="Edit"
-          style={{ background:"transparent", border:"none", color:"#3a4a6a", cursor:"pointer",
-            width:16, height:16, borderRadius:3, fontSize:9, display:"flex",
-            alignItems:"center", justifyContent:"center", flexShrink:0 }}>✎</button>
+          style={{ 
+            background:"rgba(255,255,255,0.06)", 
+            border:"1px solid rgba(100,120,160,0.5)", 
+            color:"#a0b0d0", 
+            cursor:"pointer",
+            width:24, height:24, borderRadius:5, 
+            fontSize:12, display:"flex",
+            alignItems:"center", justifyContent:"center", flexShrink:0,
+            transition:"all .2s ease"
+          }}>✎</button>
+
+        {/* DELETE BUTTON (Updated for Visibility) */}
         <button
           onClick={(e)=>{ e.stopPropagation(); onDelete(); }}
           title="Delete"
-          style={{ background:"transparent", border:"none", color:"#3a4a6a", cursor:"pointer",
-            width:16, height:16, borderRadius:3, fontSize:9, display:"flex",
-            alignItems:"center", justifyContent:"center", flexShrink:0 }}>✕</button>
+          style={{ 
+            background:"rgba(239, 68, 68, 0.08)", 
+            border:"1px solid rgba(239, 68, 68, 0.3)", 
+            color:"#ef4444", 
+            cursor:"pointer",
+            width:24, height:24, borderRadius:5, 
+            fontSize:12, display:"flex",
+            alignItems:"center", justifyContent:"center", flexShrink:0,
+            transition:"all .2s ease"
+          }}>✕</button>
       </div>
       <span style={{
         fontSize:10, color:"#c8d4ec", lineHeight:1.45,
