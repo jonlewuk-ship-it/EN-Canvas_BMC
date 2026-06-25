@@ -249,14 +249,14 @@ function HeroHeader({ kpis, pct, drawerOpen, onToggleDrawer, onAddEntry }) {
                 letterSpacing:"-0.5px", lineHeight:1,
               }}>Strategy</span>
               <span style={{
-                fontSize:10, fontWeight:600, color:"rgba(255,209,0,0.6)",
-                background:"rgba(255,209,0,0.1)", border:"1px solid rgba(255,209,0,0.25)",
+                fontSize:10, fontWeight:600, color:"rgba(255,209,0,0.40)",
+                background:"rgba(255,209,0,0.1)", border:"1px solid rgba(255,209,0,0.30)",
                 padding:"2px 7px", borderRadius:20, fontFamily:"monospace",
                 letterSpacing:"0.5px", alignSelf:"center",
               }}>v2.0</span>
             </div>
             <div style={{
-              fontSize:9, color:"rgba(255,255,255,0.38)", fontFamily:"monospace",
+              fontSize:9, color:"rgba(255,255,255,0.65)", fontFamily:"monospace",
               letterSpacing:"2px", textTransform:"uppercase", marginTop:3,
             }}>
               Business Model Canvas · AECO / BIM Industry
@@ -269,7 +269,7 @@ function HeroHeader({ kpis, pct, drawerOpen, onToggleDrawer, onAddEntry }) {
           {kpis.map((k,i)=>(
             <div key={i} style={{
               background:"rgba(255,255,255,0.04)",
-              border:"1px solid rgba(30,55,90,0.6)",
+              border:"1px solid rgba(30,55,90,0.9)",
               borderRadius:9, padding:"8px 16px", textAlign:"center",
               minWidth:80, position:"relative", overflow:"hidden",
               backdropFilter:"blur(8px)",
