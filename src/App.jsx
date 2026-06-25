@@ -720,17 +720,24 @@ export default function App() {
       </div>
 
       {/* APP BODY */}
-      <div style={{ display:"grid", gridTemplateColumns: drawerOpen ? "1fr 360px" : "1fr", transition:"grid-template-columns .3s ease", position:"relative", zIndex:1 }}>
+      <div style={{ display:"grid", gridTemplateColumns: drawerOpen ? "1fr 360px" : "1fr", transition:"grid-template-columns .4s ease", position:"relative", zIndex:1 }}>
         <main style={{ padding:"16px 16px 48px", overflow:"hidden" }}>
           {/* flow labels */}
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr 1fr 1fr", gap:8, marginBottom:6 }}>
+          <div style={{ display:"grid", gridTemplateColumns:"0.9fr 0.9fr 1fr 0.9fr 0.9fr", gap:8, marginBottom:6 }}>
             {[["① Infrastructure",""], ["② Operations",""], ["③ Value","active"], ["④ Customer Facing",""], ["⑤ Market",""]].map(([lbl,active],i)=>(
               <div key={i} style={{ textAlign:"center", fontSize:8, fontFamily:"monospace", color: active?"#ffd100":"#5a6e92", textTransform:"uppercase", letterSpacing:1, padding:"4px 6px", background:"rgba(255,255,255,.02)", border:`1px solid ${active?"rgba(255,209,0,.28)":"rgba(40,65,110,0.35)"}`, borderRadius:4 }}>{lbl}</div>
             ))}
           </div>
 
           {/* BMC GRID */}
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1.1fr 1fr 1fr", gridTemplateRows:"minmax(220px,1fr) minmax(220px,1fr) minmax(150px,auto)", gap:8 }}>
+          // Line 733
+<div style={{ 
+  display:"grid", 
+  gridTemplateColumns:"1fr 1fr 1.1fr 1fr 1fr", 
+  gridTemplateRows:"minmax(220px,1fr) minmax(220px,1fr) minmax(150px,auto)", 
+  gap:8,
+  minWidth: 0 // Prevents the grid from forcing a horizontal scroll bar
+}}>
             {/* KP */}
             <div style={{ gridColumn:"1/2", gridRow:"1/3" }}>
               <SectionCard sid="kp" entries={state.kp??[]} onAdd={()=>openAdd("kp")} onEdit={openEdit} onDelete={handleDelete} onSegClick={openStory}/>
