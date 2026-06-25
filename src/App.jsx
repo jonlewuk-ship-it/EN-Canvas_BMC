@@ -271,16 +271,16 @@ function SectionCard({ sid, entries, onAdd, onEdit, onDelete, onSegClick, wide }
   const s = SECTIONS[sid];
   return (
     <div style={{
-      background:"rgba(12,18,32,0.72)",
-      backdropFilter:"blur(16px) saturate(1.3)",
-      WebkitBackdropFilter:"blur(16px) saturate(1.3)",
-      border:`1px solid ${sid==="vp"?"rgba(255,209,0,.22)":"rgba(40,65,110,0.55)"}`,
-      borderRadius:13,
-      display:"flex", flexDirection:"column",
-      position:"relative", overflow:"hidden",
-      boxShadow: sid==="vp" ? "0 0 36px rgba(255,209,0,.07)" : "none",
-      height:"100%",
-    }}>
+  flex:1, 
+  overflowY:"auto",          // Keep this
+  display:"flex",
+  flexDirection:"column",    // Change to "column" if it's not already
+  flexWrap:"nowrap",         // Prevent horizontal scrolling
+  gap:3, 
+  paddingRight:2, 
+  alignContent:"flex-start",
+  maxHeight: "350px"         // ADD THIS to stop the box from growing
+}}>
       {/* accent stripe */}
       <div style={{ position:"absolute", top:0, left:0, right:0, height:3, background:s.accent, opacity:.85, zIndex:2 }}/>
       {/* dot grid */}
