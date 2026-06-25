@@ -234,8 +234,8 @@ function Chip({ entry, onEdit, onDelete, onSegClick, isSegSection, inlineWidth }
             border:"1px solid rgba(100,120,160,0.5)", 
             color:"#a0b0d0", 
             cursor:"pointer",
-            width:24, height:24, borderRadius:5, 
-            fontSize:12, display:"flex",
+            width:18, height:18, borderRadius:3, 
+            fontSize:10, display:"flex",
             alignItems:"center", justifyContent:"center", flexShrink:0,
             transition:"all .2s ease"
           }}>✎</button>
