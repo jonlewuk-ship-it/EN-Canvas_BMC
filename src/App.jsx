@@ -1049,7 +1049,7 @@ export default function App(){
   ];
 
   return(
-    <div style={{fontFamily:"'Inter',sans-serif",background:"#06090f",color:"#dde6f8",minHeight:"100vh",position:"relative"}}>
+    <div style={{fontFamily:"'Inter',sans-serif",background:"#06090f",color:"#FFFFFF",minHeight:"100vh",position:"relative"}}>
       <BimBg/>
       <HeroHeader kpis={kpis} pct={pct} drawerOpen={drawerOpen}
         onToggleDrawer={()=>{setDrawerOpen(v=>!v);if(!drawerOpen)setActiveSegId(null);}}
