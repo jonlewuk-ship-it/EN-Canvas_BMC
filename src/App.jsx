@@ -857,7 +857,7 @@ function CanvasLayout({state,drawerOpen,openAdd,openEdit,handleDelete,openStory,
         ].map(([lbl,hi],i)=>(
           <div key={i} style={{
             textAlign:"center", fontSize:8, fontFamily:MONO,
-            color:hi?Y:"rgba(255,255,255,30)",
+            color:hi?Y:"rgba(255,255,255,15)",
             textTransform:"uppercase", letterSpacing:"0.9px",
             padding:"4px 0",
             background:"rgba(255,255,255,0.025)",
