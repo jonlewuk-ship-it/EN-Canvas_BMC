@@ -291,15 +291,15 @@ function HeroHeader({kpis,pct,drawerOpen,onToggleDrawer,onAddEntry}){
         <div style={{flex:1,minWidth:0}}>
           <div style={{display:"flex",alignItems:"baseline",gap:6,flexWrap:"wrap"}}>
             <span style={{fontSize:mobile?17:21,fontWeight:900,color:"#fff",letterSpacing:"-0.5px",lineHeight:1}}>ACCA</span>
-            <span style={{fontSize:mobile?17:21,fontWeight:900,color:Y,letterSpacing:"-0.5px",lineHeight:1}}>Strategy</span>
+            <span style={{fontSize:mobile?17:21,fontWeight:900,color:Y,letterSpacing:"-0.5px",lineHeight:1}}>Strategic Canvas</span>
             {!mobile&&(
-              <span style={{fontSize:9,fontWeight:700,color:"rgba(255,209,0,0.75)",
+              <span style={{fontSize:9,fontWeight:700,color:"rgba(255,209,0,0.9)",
                 background:"rgba(255,209,0,0.1)",border:"1px solid rgba(255,209,0,0.3)",
                 padding:"2px 7px",borderRadius:20,fontFamily:MONO,letterSpacing:"0.5px",
-                alignSelf:"center",whiteSpace:"nowrap"}}>BIM·AECO</span>
+                alignSelf:"center",whiteSpace:"nowrap"}}>BIM·AECO Sectors</span>
             )}
           </div>
-          <div style={{fontSize:mobile?7.5:8,color:"rgba(255,255,255,0.32)",fontFamily:MONO,
+          <div style={{fontSize:mobile?7.5:8,color:"rgba(255,255,255,30)",fontFamily:MONO,
             letterSpacing:"1.6px",textTransform:"uppercase",marginTop:2,
             overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
             {mobile?"BMC · AECO / BIM":"Business Model Canvas · AECO / BIM Industry"}
