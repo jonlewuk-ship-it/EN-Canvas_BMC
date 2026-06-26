@@ -400,7 +400,7 @@ function HeroHeader({kpis,pct,drawerOpen,onToggleDrawer,onAddEntry}){
           borderTop:"1px solid rgba(30,52,90,0.4)",
           background:"rgba(0,0,0,0.15)",
         }}>
-          <span style={{fontSize:7.5,color:"rgba(255,255,255,0.22)",fontFamily:MONO,
+          <span style={{fontSize:7.5,color:"rgba(255,255,255,30)",fontFamily:MONO,
             textTransform:"uppercase",letterSpacing:"1px",flexShrink:0}}>Tags:</span>
           {CATS.map(c=>(
             <div key={c.key} style={{display:"flex",alignItems:"center",gap:4,
@@ -410,7 +410,7 @@ function HeroHeader({kpis,pct,drawerOpen,onToggleDrawer,onAddEntry}){
               {c.label}
             </div>
           ))}
-          <span style={{marginLeft:"auto",fontSize:7.5,color:"rgba(255,255,255,0.2)",fontFamily:MONO}}>
+          <span style={{marginLeft:"auto",fontSize:7.5,color:"rgba(255,255,255,30)",fontFamily:MONO}}>
             Click Customer Segment → Story Tracer
           </span>
         </div>
@@ -435,7 +435,7 @@ function Chip({entry,onEdit,onDelete,onSegClick,isSegSection,wide,idx=0}){
       style={{
         animationDelay:`${idx*40}ms`,
         display:"flex",flexDirection:"column",gap:5,
-        background:hov?"rgba(255,255,255,0.07)":hasLinks?"rgba(255,255,255,0.05)":"rgba(255,255,255,0.03)",
+        background:hov?"rgba(255,255,255,0.07)":hasLinks?"rgba(255,255,255,10)":"rgba(255,255,255,10)",
         border:`1px solid ${hov?"rgba(80,120,200,0.9)":"rgba(30,52,90,0.6)"}`,
         borderLeft:`3px solid ${chipColor}`,
         borderRadius:7,padding:"7px 9px 8px",
@@ -452,7 +452,7 @@ function Chip({entry,onEdit,onDelete,onSegClick,isSegSection,wide,idx=0}){
           {cl(entry.cat)}
         </span>
         {hasLinks&&(
-          <span style={{fontSize:7,color:Y,fontFamily:MONO,background:"rgba(255,209,0,0.1)",border:"1px solid rgba(255,209,0,0.3)",padding:"2px 5px",borderRadius:3,whiteSpace:"nowrap",lineHeight:1.6,flexShrink:0}}>
+          <span style={{fontSize:7,color:Y,fontFamily:MONO,background:"rgba(255,209,0,10)",border:"1px solid rgba(255,209,0,0.3)",padding:"2px 5px",borderRadius:3,whiteSpace:"nowrap",lineHeight:1.6,flexShrink:0}}>
             ⟶ {entry.segs.length}
           </span>
         )}
