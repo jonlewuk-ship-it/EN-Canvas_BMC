@@ -624,7 +624,7 @@ function StoryDrawer({state,activeSegId,onSelectSeg,onClose}){
       <div style={{padding:"15px 18px 12px",borderBottom:"1px solid rgba(30,52,90,0.6)",flexShrink:0,position:"relative"}}>
         <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,${Y},#22d3ee)`}}/>
         <div style={{fontSize:13,fontWeight:700,color:"#fff",letterSpacing:"-.2px"}}>🗺 Success Story Tracer</div>
-        <div style={{fontSize:9,color:"rgba(255,255,255,4)",fontFamily:MONO,marginTop:3}}>
+        <div style={{fontSize:9,color:"rgba(255,255,255,0.4)",fontFamily:MONO,marginTop:3}}>
           {seg?`→ ${seg.text.slice(0,38)}`:"Select a customer segment below"}
         </div>
         <button onClick={onClose} style={{position:"absolute",top:13,right:14,background:"rgba(255,255,255,.04)",border:"1px solid rgba(30,52,90,0.6)",color:"rgba(255,255,255,0.5)",width:26,height:26,borderRadius:5,cursor:"pointer",fontSize:15,display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
