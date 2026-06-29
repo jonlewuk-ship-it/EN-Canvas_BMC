@@ -195,6 +195,53 @@ function parseImport(raw){
     throw new Error("Import failed: "+err.message);
   }
 }
+/* ─────────────────────────────────────────────────────────
+     NEW: IMPORT/EXPORT LOGIC
+  ───────────────────────────────────────────────────────── */
+  const exportCanvas = () => {
+    const dataStr = JSON.stringify(state, null, 2);
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `BMC_${LOCALE.canvasTitle || 'Export'}_${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const importCanvas = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const raw = JSON.parse(event.target.result);
+        const source = raw.notes || raw; // Supports both your new format and the legacy ES format
+        
+        const isMerge = window.confirm("Merge with existing entries? \n(Cancel to replace current canvas)");
+        
+        setState(prev => {
+          const newState = isMerge ? { ...prev } : {};
+          Object.keys(source).forEach(sid => {
+            if (Array.isArray(source[sid])) {
+              const mapped = source[sid].map(entry => ({
+                id: entry.id || mkId(),
+                text: entry.author ? `${entry.content || entry.text || ""}\n\nAuthor: ${entry.author}` : (entry.content || entry.text || ""),
+                cat: entry.cat || (entry.color === "nc-green" ? "opportunity" : "info"),
+                segs: entry.segs || [],
+                ts: Date.now()
+              }));
+              newState[sid] = [...(newState[sid] || []), ...mapped];
+            }
+          });
+          return newState;
+        });
+        showToast("Import successful");
+      } catch (err) { alert("Invalid JSON file structure."); }
+    };
+    reader.readAsText(file);
+  };
+
 
 /* ─────────────────────────────────────────────────────────
    EXPORT BUILDER
@@ -225,6 +272,9 @@ function buildExport(state, canvasTitle){
     ),
   };
 }
+
+{/* Hidden file input for import */}
+      <input type="file" id="import-input" hidden onChange={importCanvas} accept=".json" />
 
 /* ─────────────────────────────────────────────────────────
    BIM BACKGROUND
@@ -288,6 +338,7 @@ function BimBg(){
     </div>
   );
 }
+
 
 /* ─────────────────────────────────────────────────────────
    RESPONSIVE HOOK
@@ -1126,6 +1177,14 @@ function computeInsights(state) {
   };
 }
 
+<HeroHeader 
+        kpis={kpis} pct={pct} drawerOpen={drawerOpen} canvasTitle={canvasTitle}
+        onToggleDrawer={()=>{setDrawerOpen(v=>!v);if(!drawerOpen)setActiveSegId(null);}}
+        onAddEntry={()=>openAdd("vp")}
+        // Add these two rows:
+        onImport={() => document.getElementById('import-input').click()}
+        onExport={exportCanvas}
+      />
 
 /* ─────────────────────────────────────────────────────────
    HERO HEADER
