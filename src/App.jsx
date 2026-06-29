@@ -1,3 +1,62 @@
+// 1. ADD THIS IMPORT AT THE VERY TOP
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+
+// 2. FIND YOUR EXISTING HANDLERS (Search for 'handleDelete' or 'handleSave')
+// AND PASTE THIS BLOCK DIRECTLY BENEATH THEM:
+
+const exportCanvas = () => {
+  const dataStr = JSON.stringify(state, null, 2);
+  const blob = new Blob([dataStr], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `BMC_Export_${new Date().toISOString().slice(0, 10)}.json`;
+  link.click();
+  URL.revokeObjectURL(url);
+};
+
+const importCanvas = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    try {
+      const raw = JSON.parse(event.target.result);
+      // Logic for your specific ES - Spagna structure
+      const notes = raw.notes || []; 
+      const isMerge = window.confirm("Merge with existing entries? (Cancel to replace)");
+      
+      setState(prev => {
+        const newState = isMerge ? { ...prev } : {};
+        const imported = notes.map(n => ({
+          id: n.id || mkId(),
+          text: n.author ? `${n.content || ""}\n\nAuthor: ${n.author}` : (n.content || ""),
+          cat: n.color === "nc-green" ? "opportunity" : "info",
+          segs: [],
+          ts: Date.now()
+        }));
+        
+        newState.notes = [...(newState.notes || []), ...imported];
+        return newState;
+      });
+      alert("Import complete");
+    } catch (err) { alert("Invalid File Format"); }
+  };
+  reader.readAsText(file);
+};
+
+// 3. IN YOUR RETURN BLOCK, UPDATE THE HEROHEADER (approx line 235):
+<HeroHeader 
+  kpis={kpis} pct={pct} drawerOpen={drawerOpen} canvasTitle={canvasTitle}
+  onToggleDrawer={()=>{setDrawerOpen(v=>!v);if(!drawerOpen)setActiveSegId(null);}}
+  onAddEntry={()=>openAdd("vp")}
+  onImport={() => document.getElementById('hidden-import-file').click()}
+  onExport={exportCanvas}
+/>
+
+// 4. ADD THE HIDDEN INPUT JUST BELOW THE HEROHEADER
+<input type="file" id="hidden-import-file" style={{display:'none'}} onChange={importCanvas} accept=".json" />
+
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 
 /* ─────────────────────────────────────────────────────────
@@ -24,7 +83,6 @@ const UI_STRINGS = {
   pt:{addEntry:"Adicionar",import:"Importar",export:"Exportar",storyView:"Vista da História",generateInsights:"Gerar Insights",regenerate:"Regenerar",analysing:"Analisando…",saveTo:"+ Salvar em Notas",completion:"Conclusão",execSummary:"Resumo Executivo",canvasHealth:"Saúde do Canvas",strengths:"Pontos fortes",gaps:"Lacunas",quickWin:"Ação rápida (30 dias)",approach:"Abordagem Go-to-Market",risks:"Riscos",tools:"Ferramentas usBIM recomendadas",perSection:"Entradas por Seção",catBreakdown:"Distribuição por Categoria",fillFirst:"Preencha os 9 cartões do BMC.",clickGenerate:"Clique em Gerar Insights.",noLinked:"Nenhuma entrada vinculada.",allSegments:"← Todos os Segmentos",linkedEntries:"Entradas Vinculadas",bmcSections:"Seções BMC",flowMap:"Mapa de Fluxo · Parceiros → Valor → Receitas",canvasFlow:"Fluxo Canvas · Parceiros → Receitas",replace:"Substituir Canvas",merge:"Mesclar no Canvas",importTitle:"Importar de JSON",importReady:"Pronto para importar"},
 };
 const T = UI_STRINGS[LOCALE.lang] || UI_STRINGS.en;
-
 
 /* ─────────────────────────────────────────────────────────
    GLOBAL CSS
