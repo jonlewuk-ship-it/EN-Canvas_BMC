@@ -750,8 +750,24 @@ function VisualMap({state,segId,seg}){
         <div style={{fontSize:8,color:"rgba(255,255,255,0.3)",fontFamily:MONO}}>{total} connections</div>
       </div>
 
-      <div style={{overflowX:"auto",overflowY:"hidden",padding:"10px"}}>
+   <div
+    ref={viewportRef}
+    onWheel={onWheel}
+    onMouseDown={(e)=>startPan(e.clientX,e.clientY)}
+    onTouchStart={(e)=>startPan(
+        e.touches[0].clientX,
+        e.touches[0].clientY
+    )}
+    style={{
+        overflow:"hidden",
+        padding:"10px",
+        cursor:panning ? "grabbing" : "grab",
+        touchAction:"none",
+        userSelect:"none"
+    }}
+      
         <svg viewBox={`0 0 ${W} ${H}`} style={{width:"100%",minWidth:560,height:"auto",display:"block"}}>
+           <g>
           <defs>
             <radialGradient id="vm-glow" cx="50%" cy="50%" r="50%">
               <stop offset="0%" stopColor="#ffd100" stopOpacity="0.18"/>
@@ -759,6 +775,9 @@ function VisualMap({state,segId,seg}){
             </radialGradient>
           </defs>
 
+          {/* 👇 THIS is the ONLY change that enables zoom/pan */}
+  <g transform={`translate(${pan.x},${pan.y}) scale(${zoom})`}>
+              
           {/* central glow behind segment node */}
           <circle cx={cx} cy={cy} r={90} fill="url(#vm-glow)"/>
 
