@@ -767,7 +767,6 @@ function VisualMap({state,segId,seg}){
     }}
       
         <svg viewBox={`0 0 ${W} ${H}`} style={{width:"100%",minWidth:560,height:"auto",display:"block"}}>
-           <g>
           <defs>
             <radialGradient id="vm-glow" cx="50%" cy="50%" r="50%">
               <stop offset="0%" stopColor="#ffd100" stopOpacity="0.18"/>
@@ -776,7 +775,7 @@ function VisualMap({state,segId,seg}){
           </defs>
 
           {/* 👇 THIS is the ONLY change that enables zoom/pan */}
-  <g transform={`translate(${pan.x},${pan.y}) scale(${zoom})`}>
+         <g transform={`translate(${pan.x},${pan.y}) scale(${zoom})`}>
               
           {/* central glow behind segment node */}
           <circle cx={cx} cy={cy} r={90} fill="url(#vm-glow)"/>
