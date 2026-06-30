@@ -128,7 +128,7 @@ const DEMO = {
     {id:mkId(),text:"Government & public sector engagement programme",      cat:"high",        segs:[SP,SI]},
   ],
   ch:[
-    {id:mkId(),text:"Direct SaaS subscription via acca.it platform",    cat:"strength",    segs:[SA,SC,SO,SB,SI,SP]},
+    {id:mkId(),text:"Direct SaaS subscription via ACCA usBIM platform",    cat:"strength",    segs:[SA,SC,SO,SB,SI,SP]},
     {id:mkId(),text:"Authorised reseller network across 40+ countries", cat:"high",        segs:[SA,SC,SB]},
     {id:mkId(),text:"BIM conferences & buildingSMART events",           cat:"medium",      segs:[SA,SC,SB]},
     {id:mkId(),text:"Partner integrations (Revit, ArchiCAD, Navisworks)",cat:"opportunity",segs:[SA,SC,SB]},
@@ -225,7 +225,7 @@ function BimBg(){
           <text x="-58" y="-49" fill="#60a5fa" fontSize="9" fontFamily="monospace">Y</text>
         </g>
         <text x="24" y="892" fill="#192d4a" fontSize="8.5" fontFamily="monospace" opacity="0.55">IFC4.3 · ISO 19650 · openBIM · buildingSMART · EU BIM Mandate</text>
-        <text x="1080" y="892" fill="#192d4a" fontSize="8.5" fontFamily="monospace" opacity="0.55">AECO / BIM Industry · ACCA software S.p.A.</text>
+        <text x="1080" y="892" fill="#192d4a" fontSize="8.5" fontFamily="monospace" opacity="0.55">AECO / openBIM · ACCA software S.p.A.</text>
       </svg>
     </div>
   );
@@ -291,18 +291,18 @@ function HeroHeader({kpis,pct,drawerOpen,onToggleDrawer,onAddEntry,onImport,onEx
         <div style={{flex:1,minWidth:0}}>
           <div style={{display:"flex",alignItems:"baseline",gap:6,flexWrap:"wrap"}}>
             <span style={{fontSize:mobile?17:21,fontWeight:900,color:"#fff",letterSpacing:"-0.5px",lineHeight:1}}>ACCA</span>
-            <span style={{fontSize:mobile?17:21,fontWeight:900,color:Y,letterSpacing:"-0.5px",lineHeight:1}}>Strategy</span>
+            <span style={{fontSize:mobile?17:21,fontWeight:900,color:Y,letterSpacing:"-0.5px",lineHeight:1}}>Strategic Canvas</span>
             {!mobile&&(
               <span style={{fontSize:9,fontWeight:700,color:"rgba(255,209,0,0.75)",
                 background:"rgba(255,209,0,0.1)",border:"1px solid rgba(255,209,0,0.3)",
                 padding:"2px 7px",borderRadius:20,fontFamily:MONO,letterSpacing:"0.5px",
-                alignSelf:"center",whiteSpace:"nowrap"}}>BIM·AECO</span>
+                alignSelf:"center",whiteSpace:"nowrap"}}>openBIM·AECO</span>
             )}
           </div>
           <div style={{fontSize:mobile?7.5:8,color:"rgba(255,255,255,0.32)",fontFamily:MONO,
             letterSpacing:"1.6px",textTransform:"uppercase",marginTop:2,
             overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
-            {mobile?"BMC · AECO / BIM":"Business Model Canvas · AECO / BIM Industry"}
+            {mobile?"BMC · AECO / openBIM":"Business Model Canvas · AECO / openBIM Industry"}
           </div>
         </div>
 
@@ -1135,7 +1135,7 @@ function buildExport(state, canvasTitle){
     canvas:{
       title: canvasTitle || "BMC Export",
       exported_at: new Date().toISOString(),
-      tool: "ACCA Strategy BMC v2",
+      tool: "ACCA Strategic Canvas v2/TDP",
     },
     summary:{
       total_entries: allEntries.length,
@@ -1214,7 +1214,7 @@ function ImportModal({open,onClose,onConfirm}){
           <div style={{position:"absolute",top:0,left:0,right:0,height:2,
             background:"linear-gradient(90deg,#ffd100,#60a5fa)"}}/>
           <div style={{fontSize:8,fontFamily:"'JetBrains Mono',monospace",color:"#ffd100",
-            textTransform:"uppercase",letterSpacing:1.5,marginBottom:3}}>IMPORT CANVAS</div>
+            textTransform:"uppercase",letterSpacing:1.5,marginBottom:3}}>IMPORTA da altro CANVAS</div>
           <div style={{fontSize:16,fontWeight:700,color:"#fff"}}>Import from JSON</div>
           <div style={{fontSize:10,color:"rgba(255,255,255,0.45)",marginTop:2}}>
             Supports ACCA Canvas export format — authors will appear as tags on each entry
