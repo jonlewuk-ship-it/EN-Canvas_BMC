@@ -128,7 +128,7 @@ const DEMO = {
     {id:mkId(),text:"Government & public sector engagement programme",      cat:"high",        segs:[SP,SI]},
   ],
   ch:[
-    {id:mkId(),text:"Direct SaaS subscription via ACCA usBIM platform",    cat:"strength",    segs:[SA,SC,SO,SB,SI,SP]},
+    {id:mkId(),text:"Direct SaaS subscription via acca.it platform",    cat:"strength",    segs:[SA,SC,SO,SB,SI,SP]},
     {id:mkId(),text:"Authorised reseller network across 40+ countries", cat:"high",        segs:[SA,SC,SB]},
     {id:mkId(),text:"BIM conferences & buildingSMART events",           cat:"medium",      segs:[SA,SC,SB]},
     {id:mkId(),text:"Partner integrations (Revit, ArchiCAD, Navisworks)",cat:"opportunity",segs:[SA,SC,SB]},
@@ -225,7 +225,7 @@ function BimBg(){
           <text x="-58" y="-49" fill="#60a5fa" fontSize="9" fontFamily="monospace">Y</text>
         </g>
         <text x="24" y="892" fill="#192d4a" fontSize="8.5" fontFamily="monospace" opacity="0.55">IFC4.3 · ISO 19650 · openBIM · buildingSMART · EU BIM Mandate</text>
-        <text x="1080" y="892" fill="#192d4a" fontSize="8.5" fontFamily="monospace" opacity="0.55">AECO / openBIM · ACCA software S.p.A.</text>
+        <text x="1080" y="892" fill="#192d4a" fontSize="8.5" fontFamily="monospace" opacity="0.55">AECO / BIM Industry · ACCA software S.p.A.</text>
       </svg>
     </div>
   );
@@ -291,18 +291,18 @@ function HeroHeader({kpis,pct,drawerOpen,onToggleDrawer,onAddEntry,onImport,onEx
         <div style={{flex:1,minWidth:0}}>
           <div style={{display:"flex",alignItems:"baseline",gap:6,flexWrap:"wrap"}}>
             <span style={{fontSize:mobile?17:21,fontWeight:900,color:"#fff",letterSpacing:"-0.5px",lineHeight:1}}>ACCA</span>
-            <span style={{fontSize:mobile?17:21,fontWeight:900,color:Y,letterSpacing:"-0.5px",lineHeight:1}}>Strategic Canvas</span>
+            <span style={{fontSize:mobile?17:21,fontWeight:900,color:Y,letterSpacing:"-0.5px",lineHeight:1}}>Strategy</span>
             {!mobile&&(
               <span style={{fontSize:9,fontWeight:700,color:"rgba(255,209,0,0.75)",
                 background:"rgba(255,209,0,0.1)",border:"1px solid rgba(255,209,0,0.3)",
                 padding:"2px 7px",borderRadius:20,fontFamily:MONO,letterSpacing:"0.5px",
-                alignSelf:"center",whiteSpace:"nowrap"}}>openBIM·AECO</span>
+                alignSelf:"center",whiteSpace:"nowrap"}}>BIM·AECO</span>
             )}
           </div>
           <div style={{fontSize:mobile?7.5:8,color:"rgba(255,255,255,0.32)",fontFamily:MONO,
             letterSpacing:"1.6px",textTransform:"uppercase",marginTop:2,
             overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
-            {mobile?"BMC · AECO / openBIM":"Business Model Canvas · AECO / openBIM Industry"}
+            {mobile?"BMC · AECO / BIM":"Business Model Canvas · AECO / BIM Industry"}
           </div>
         </div>
 
@@ -699,6 +699,49 @@ function VisualMap({state,segId,seg}){
 
   const [hoveredEntry,setHoveredEntry] = useState(null);
   const [hoveredSection,setHoveredSection] = useState(null);
+
+  /* ── Zoom / pan state ── */
+  const [zoom,setZoom] = useState(1);
+  const [pan,setPan]   = useState({x:0,y:0});
+  const [panning,setPanning] = useState(false);
+  const panStartRef = useRef({x:0,y:0,panX:0,panY:0});
+  const viewportRef = useRef(null);
+
+  const ZOOM_MIN = 0.5, ZOOM_MAX = 3;
+  const clampZoom = z => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, z));
+
+  const zoomIn  = ()=>setZoom(z=>clampZoom(+(z+0.25).toFixed(2)));
+  const zoomOut = ()=>setZoom(z=>clampZoom(+(z-0.25).toFixed(2)));
+  const zoomReset = ()=>{setZoom(1);setPan({x:0,y:0});};
+
+  const onWheel = e=>{
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+    setZoom(z=>clampZoom(+(z+delta).toFixed(2)));
+  };
+
+  const startPan = (clientX,clientY)=>{
+    setPanning(true);
+    panStartRef.current = {x:clientX,y:clientY,panX:pan.x,panY:pan.y};
+    const onMove = e=>{
+      const cx = e.touches ? e.touches[0].clientX : e.clientX;
+      const cy = e.touches ? e.touches[0].clientY : e.clientY;
+      const dx = cx - panStartRef.current.x;
+      const dy = cy - panStartRef.current.y;
+      setPan({x:panStartRef.current.panX+dx, y:panStartRef.current.panY+dy});
+    };
+    const onUp = ()=>{
+      setPanning(false);
+      window.removeEventListener("mousemove",onMove);
+      window.removeEventListener("mouseup",onUp);
+      window.removeEventListener("touchmove",onMove);
+      window.removeEventListener("touchend",onUp);
+    };
+    window.addEventListener("mousemove",onMove);
+    window.addEventListener("mouseup",onUp);
+    window.addEventListener("touchmove",onMove,{passive:false});
+    window.addEventListener("touchend",onUp);
+  };
 
   return(
     <div style={{background:"rgba(255,255,255,0.025)",border:"1px solid rgba(30,52,90,0.55)",borderRadius:10,overflow:"hidden",animation:"fadeUp 0.3s ease"}}>
@@ -1135,7 +1178,7 @@ function buildExport(state, canvasTitle){
     canvas:{
       title: canvasTitle || "BMC Export",
       exported_at: new Date().toISOString(),
-      tool: "ACCA Strategic Canvas v2/TDP",
+      tool: "ACCA Strategy BMC v2",
     },
     summary:{
       total_entries: allEntries.length,
@@ -1214,7 +1257,7 @@ function ImportModal({open,onClose,onConfirm}){
           <div style={{position:"absolute",top:0,left:0,right:0,height:2,
             background:"linear-gradient(90deg,#ffd100,#60a5fa)"}}/>
           <div style={{fontSize:8,fontFamily:"'JetBrains Mono',monospace",color:"#ffd100",
-            textTransform:"uppercase",letterSpacing:1.5,marginBottom:3}}>IMPORTA da altro CANVAS</div>
+            textTransform:"uppercase",letterSpacing:1.5,marginBottom:3}}>IMPORT CANVAS</div>
           <div style={{fontSize:16,fontWeight:700,color:"#fff"}}>Import from JSON</div>
           <div style={{fontSize:10,color:"rgba(255,255,255,0.45)",marginTop:2}}>
             Supports ACCA Canvas export format — authors will appear as tags on each entry
@@ -1386,10 +1429,37 @@ function ImportModal({open,onClose,onConfirm}){
    Tablet (640-1023): 2-column abbreviated grid
    Mobile (<640px):  single-column logical stack
 ───────────────────────────────────────────────────────── */
-function CanvasLayout({state,drawerOpen,openAdd,openEdit,handleDelete,openStory,activeSegId,setActiveSegId,setDrawerOpen}){
+function CanvasLayout({state,drawerOpen,openAdd,openEdit,handleDelete,openStory,activeSegId,setActiveSegId,setDrawerOpen,drawerWidth,setDrawerWidth}){
   const w   = useWW();
   const mob = w < 640;
   const tab = w < 1024;
+  const [resizing,setResizing] = useState(false);
+  const containerRef = useRef(null);
+
+  /* ── Drag-to-resize handle logic ── */
+  const startResize = useCallback((clientX)=>{
+    setResizing(true);
+    const startX = clientX;
+    const startWidth = drawerWidth;
+
+    const onMove = (e)=>{
+      const x = e.touches ? e.touches[0].clientX : e.clientX;
+      const delta = startX - x; // dragging left increases width
+      const next = Math.min(820, Math.max(300, startWidth + delta));
+      setDrawerWidth(next);
+    };
+    const onUp = ()=>{
+      setResizing(false);
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+      window.removeEventListener("touchmove", onMove);
+      window.removeEventListener("touchend", onUp);
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    window.addEventListener("touchmove", onMove, {passive:false});
+    window.addEventListener("touchend", onUp);
+  },[drawerWidth,setDrawerWidth]);
 
   /* Reusable card renderer */
   const C = (sid) => (
@@ -1512,11 +1582,12 @@ function CanvasLayout({state,drawerOpen,openAdd,openEdit,handleDelete,openStory,
   );
 
   return (
-    <div style={{
+    <div ref={containerRef} style={{
       display:"grid",
-      gridTemplateColumns: drawerOpen && !tab ? "1fr 360px" : "1fr",
-      transition:"grid-template-columns .3s ease",
+      gridTemplateColumns: drawerOpen && !tab ? `1fr 10px ${drawerWidth}px` : "1fr",
+      transition: resizing ? "none" : "grid-template-columns .3s ease",
       position:"relative", zIndex:1, alignItems:"start",
+      userSelect: resizing ? "none" : "auto",
     }}>
 
       {/* ── Main canvas area ── */}
@@ -1528,6 +1599,34 @@ function CanvasLayout({state,drawerOpen,openAdd,openEdit,handleDelete,openStory,
         {tab && !mob && <TabletGrid/>}
         {mob   && <MobileStack/>}
       </main>
+
+      {/* ── Drag handle (desktop only, when drawer open) ── */}
+      {drawerOpen && !tab && (
+        <div
+          onMouseDown={e=>{e.preventDefault();startResize(e.clientX);}}
+          onTouchStart={e=>{startResize(e.touches[0].clientX);}}
+          title="Drag to resize"
+          style={{
+            position:"sticky", top:0,
+            height:"100vh",
+            width:10,
+            cursor:"col-resize",
+            display:"flex", alignItems:"center", justifyContent:"center",
+            background: resizing ? "rgba(255,209,0,0.12)" : "transparent",
+            transition: resizing ? "none" : "background .15s",
+            zIndex:50,
+          }}
+          onMouseEnter={e=>{if(!resizing)e.currentTarget.style.background="rgba(255,209,0,0.08)";}}
+          onMouseLeave={e=>{if(!resizing)e.currentTarget.style.background="transparent";}}
+        >
+          <div style={{
+            width:3, height:48, borderRadius:99,
+            background: resizing ? Y : "rgba(255,255,255,0.18)",
+            transition: resizing ? "none" : "background .15s",
+            boxShadow: resizing ? `0 0 8px ${Y}` : "none",
+          }}/>
+        </div>
+      )}
 
       {/* ── Story drawer ── */}
       {drawerOpen && (
@@ -1550,9 +1649,11 @@ function CanvasLayout({state,drawerOpen,openAdd,openEdit,handleDelete,openStory,
             </div>
           </div>
         ) : (
-          /* Desktop: inline side panel */
-          <StoryDrawer state={state} activeSegId={activeSegId}
-            onSelectSeg={setActiveSegId} onClose={()=>setDrawerOpen(false)}/>
+          /* Desktop: inline side panel, resizable */
+          <div style={{height:"100%",overflow:"hidden"}}>
+            <StoryDrawer state={state} activeSegId={activeSegId}
+              onSelectSeg={setActiveSegId} onClose={()=>setDrawerOpen(false)}/>
+          </div>
         )
       )}
     </div>
@@ -1576,6 +1677,7 @@ export default function App(){
   const [modal,setModal]=useState({open:false,sid:"vp",editEntry:null});
   const [importOpen,setImportOpen]=useState(false);
   const [drawerOpen,setDrawerOpen]=useState(false);
+  const [drawerWidth,setDrawerWidth]=useState(420);
   const [activeSegId,setActiveSegId]=useState(null);
   const [toast,setToast]=useState({msg:"",show:false});
   const toastTimer=useRef(null);
@@ -1671,6 +1773,7 @@ export default function App(){
         handleDelete={handleDelete} openStory={openStory}
         activeSegId={activeSegId} setActiveSegId={setActiveSegId}
         setDrawerOpen={setDrawerOpen}
+        drawerWidth={drawerWidth} setDrawerWidth={setDrawerWidth}
       />
 
       <Modal open={modal.open} onClose={closeModal} onSave={handleSave} sid={modal.sid} editEntry={modal.editEntry} allSegs={state.cs??[]}/>
