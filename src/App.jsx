@@ -153,7 +153,6 @@ const DEMO = {
     {id:mkId(),text:"Infrastructure management cos. need GIS ↔ IFC bridge — evaluate partnership with Esri / Bentley",             cat:"risk",       segs:[]},
   ],
 };
-
 /* ─────────────────────────────────────────────────────────
    BIM BACKGROUND
 ───────────────────────────────────────────────────────── */
