@@ -291,7 +291,7 @@ function HeroHeader({kpis,pct,drawerOpen,onToggleDrawer,onAddEntry,onImport,onEx
         <div style={{flex:1,minWidth:0}}>
           <div style={{display:"flex",alignItems:"baseline",gap:6,flexWrap:"wrap"}}>
             <span style={{fontSize:mobile?17:21,fontWeight:900,color:"#fff",letterSpacing:"-0.5px",lineHeight:1}}>ACCA</span>
-            <span style={{fontSize:mobile?17:21,fontWeight:900,color:Y,letterSpacing:"-0.5px",lineHeight:1}}>Strategy</span>
+            <span style={{fontSize:mobile?17:21,fontWeight:900,color:Y,letterSpacing:"-0.5px",lineHeight:1}}>Strategic Business Canvas</span>
             {!mobile&&(
               <span style={{fontSize:9,fontWeight:700,color:"rgba(255,209,0,0.75)",
                 background:"rgba(255,209,0,0.1)",border:"1px solid rgba(255,209,0,0.3)",
@@ -1196,7 +1196,7 @@ function buildExport(state, canvasTitle){
     canvas:{
       title: canvasTitle || "BMC Export",
       exported_at: new Date().toISOString(),
-      tool: "ACCA Strategy BMC v2",
+      tool: "ACCA Strategic BMC v2",
     },
     summary:{
       total_entries: allEntries.length,
