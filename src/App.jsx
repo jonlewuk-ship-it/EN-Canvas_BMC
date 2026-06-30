@@ -1196,7 +1196,7 @@ function buildExport(state, canvasTitle){
     canvas:{
       title: canvasTitle || "BMC Export",
       exported_at: new Date().toISOString(),
-      tool: "ACCA Strategic BMC v2",
+      tool: "ACCA Strategy BMC v2",
     },
     summary:{
       total_entries: allEntries.length,
