@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 
 /* ─────────────────────────────────────────────────────────
-   GLOBAL STYLES injected once
+   GLOBAL STYLES injected once 
 ───────────────────────────────────────────────────────── */
 const GLOBAL_CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
@@ -128,7 +128,7 @@ const DEMO = {
     {id:mkId(),text:"Government & public sector engagement programme",      cat:"high",        segs:[SP,SI]},
   ],
   ch:[
-    {id:mkId(),text:"Direct SaaS subscription via acca.it platform",    cat:"strength",    segs:[SA,SC,SO,SB,SI,SP]},
+    {id:mkId(),text:"Direct SaaS subscription via usBIM platform",    cat:"strength",    segs:[SA,SC,SO,SB,SI,SP]},
     {id:mkId(),text:"Authorised reseller network across 40+ countries", cat:"high",        segs:[SA,SC,SB]},
     {id:mkId(),text:"BIM conferences & buildingSMART events",           cat:"medium",      segs:[SA,SC,SB]},
     {id:mkId(),text:"Partner integrations (Revit, ArchiCAD, Navisworks)",cat:"opportunity",segs:[SA,SC,SB]},
@@ -296,7 +296,7 @@ function HeroHeader({kpis,pct,drawerOpen,onToggleDrawer,onAddEntry,onImport,onEx
               <span style={{fontSize:9,fontWeight:700,color:"rgba(255,209,0,0.75)",
                 background:"rgba(255,209,0,0.1)",border:"1px solid rgba(255,209,0,0.3)",
                 padding:"2px 7px",borderRadius:20,fontFamily:MONO,letterSpacing:"0.5px",
-                alignSelf:"center",whiteSpace:"nowrap"}}>BIM·AECO</span>
+                alignSelf:"center",whiteSpace:"nowrap"}}>openBIM·AECO</span>
             )}
           </div>
           <div style={{fontSize:mobile?7.5:8,color:"rgba(255,255,255,0.32)",fontFamily:MONO,
