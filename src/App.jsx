@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 
 /* ─────────────────────────────────────────────────────────
-   GLOBAL STYLES injected once 
+   GLOBAL STYLES injected once
 ───────────────────────────────────────────────────────── */
 const GLOBAL_CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
@@ -128,7 +128,7 @@ const DEMO = {
     {id:mkId(),text:"Government & public sector engagement programme",      cat:"high",        segs:[SP,SI]},
   ],
   ch:[
-    {id:mkId(),text:"Direct SaaS subscription via usBIM platform",    cat:"strength",    segs:[SA,SC,SO,SB,SI,SP]},
+    {id:mkId(),text:"Direct SaaS subscription via acca.it platform",    cat:"strength",    segs:[SA,SC,SO,SB,SI,SP]},
     {id:mkId(),text:"Authorised reseller network across 40+ countries", cat:"high",        segs:[SA,SC,SB]},
     {id:mkId(),text:"BIM conferences & buildingSMART events",           cat:"medium",      segs:[SA,SC,SB]},
     {id:mkId(),text:"Partner integrations (Revit, ArchiCAD, Navisworks)",cat:"opportunity",segs:[SA,SC,SB]},
@@ -153,6 +153,7 @@ const DEMO = {
     {id:mkId(),text:"Infrastructure management cos. need GIS ↔ IFC bridge — evaluate partnership with Esri / Bentley",             cat:"risk",       segs:[]},
   ],
 };
+
 /* ─────────────────────────────────────────────────────────
    BIM BACKGROUND
 ───────────────────────────────────────────────────────── */
@@ -290,12 +291,12 @@ function HeroHeader({kpis,pct,drawerOpen,onToggleDrawer,onAddEntry,onImport,onEx
         <div style={{flex:1,minWidth:0}}>
           <div style={{display:"flex",alignItems:"baseline",gap:6,flexWrap:"wrap"}}>
             <span style={{fontSize:mobile?17:21,fontWeight:900,color:"#fff",letterSpacing:"-0.5px",lineHeight:1}}>ACCA</span>
-            <span style={{fontSize:mobile?17:21,fontWeight:900,color:Y,letterSpacing:"-0.5px",lineHeight:1}}>Strategic Business Canvas</span>
+            <span style={{fontSize:mobile?17:21,fontWeight:900,color:Y,letterSpacing:"-0.5px",lineHeight:1}}>Strategy</span>
             {!mobile&&(
               <span style={{fontSize:9,fontWeight:700,color:"rgba(255,209,0,0.75)",
                 background:"rgba(255,209,0,0.1)",border:"1px solid rgba(255,209,0,0.3)",
                 padding:"2px 7px",borderRadius:20,fontFamily:MONO,letterSpacing:"0.5px",
-                alignSelf:"center",whiteSpace:"nowrap"}}>openBIM·AECO</span>
+                alignSelf:"center",whiteSpace:"nowrap"}}>BIM·AECO</span>
             )}
           </div>
           <div style={{fontSize:mobile?7.5:8,color:"rgba(255,255,255,0.32)",fontFamily:MONO,
@@ -749,33 +750,15 @@ function VisualMap({state,segId,seg}){
         <div style={{fontSize:8,color:"rgba(255,255,255,0.3)",fontFamily:MONO}}>{total} connections</div>
       </div>
 
-   <div
-    ref={viewportRef}
-    onWheel={onWheel}
-    onMouseDown={(e)=>startPan(e.clientX,e.clientY)}
-    onTouchStart={(e)=>startPan(
-        e.touches[0].clientX,
-        e.touches[0].clientY
-    )}
-    style={{
-        overflow:"hidden",
-        padding:"10px",
-        cursor:panning ? "grabbing" : "grab",
-        touchAction:"none",
-        userSelect:"none"
-    }}
+      <div style={{overflowX:"auto",overflowY:"hidden",padding:"10px"}}>
         <svg viewBox={`0 0 ${W} ${H}`} style={{width:"100%",minWidth:560,height:"auto",display:"block"}}>
+          <defs>
+            <radialGradient id="vm-glow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#ffd100" stopOpacity="0.18"/>
+              <stop offset="100%" stopColor="#ffd100" stopOpacity="0"/>
+            </radialGradient>
+          </defs>
 
-  <defs>
-    <radialGradient id="vm-glow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stopColor="#ffd100" stopOpacity="0.18"/>
-      <stop offset="100%" stopColor="#ffd100" stopOpacity="0"/>
-    </radialGradient>
-  </defs>
-
-          {/* 👇 THIS is the ONLY change that enables zoom/pan */}
-         <g transform={`translate(${pan.x},${pan.y}) scale(${zoom})`}>
-              
           {/* central glow behind segment node */}
           <circle cx={cx} cy={cy} r={90} fill="url(#vm-glow)"/>
 
