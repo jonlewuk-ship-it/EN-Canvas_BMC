@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, createContext, useContext } from "react";
 
 /* ─────────────────────────────────────────────────────────
    GLOBAL STYLES injected once
@@ -48,7 +48,7 @@ const GLOBAL_CSS = `
 const Y = "#ffd100";
 const MONO = "'JetBrains Mono', monospace";
 
-const CATS = [
+const DEFAULT_CATS = [
   { key:"critical",    color:"#ff4d4d", label:"Critical",      desc:"Blocker / must-have"   },
   { key:"high",        color:"#ff8c00", label:"High",          desc:"Significant importance" },
   { key:"medium",      color:Y,         label:"Medium",        desc:"Moderate priority"      },
@@ -58,9 +58,42 @@ const CATS = [
   { key:"strength",    color:"#22d3ee", label:"Strength",      desc:"Core advantage"         },
   { key:"info",        color:"#94a3b8", label:"Info",          desc:"General reference"      },
 ];
-const cc  = k => CATS.find(c=>c.key===k)?.color ?? Y;
-const cl  = k => CATS.find(c=>c.key===k)?.label ?? k;
+// cc/cl now take the (possibly user-customised) category list as their first argument
+const cc  = (cats,k) => (cats||DEFAULT_CATS).find(c=>c.key===k)?.color ?? Y;
+const cl  = (cats,k) => {
+  const c=(cats||DEFAULT_CATS).find(c=>c.key===k);
+  if(!c) return k;                         // unknown key — fall back to raw key
+  return (c.label && c.label.trim()) ? c.label : "";   // "" signals "no text — colour only"
+};
 const mkId= () => "e"+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+const mkCatKey = () => "c"+Date.now().toString(36)+Math.random().toString(36).slice(2,4);
+
+/* Category config is shared app-wide via context so any component can read
+   the current colour/label mapping without prop-drilling. */
+const CatsContext = createContext({cats:DEFAULT_CATS, setCats:()=>{}});
+
+/* Small reusable badge: renders the category's text pill when a label is set,
+   otherwise collapses to a plain colour-only swatch so entries can still be
+   visually threaded together purely by colour. */
+function CatTag({cat,size="md"}){
+  if(!cat) return null;
+  const hasLabel = !!(cat.label && cat.label.trim());
+  if(hasLabel){
+    const fs = size==="sm" ? 7 : 7.5;
+    return(
+      <span title={cat.label} style={{fontSize:fs,fontWeight:700,fontFamily:MONO,textTransform:"uppercase",letterSpacing:".5px",
+        color:cat.color,background:`${cat.color}18`,border:`1px solid ${cat.color}55`,
+        padding:"2px 5px",borderRadius:3,flexShrink:0,whiteSpace:"nowrap",lineHeight:1.6,display:"inline-block"}}>
+        {cat.label}
+      </span>
+    );
+  }
+  const dim = size==="sm" ? 12 : 15;
+  return(
+    <span title="Custom colour tag (no label set)" style={{display:"inline-block",width:dim,height:dim,borderRadius:4,
+      background:cat.color,border:"1px solid rgba(255,255,255,0.35)",boxShadow:`0 0 6px ${cat.color}80`,flexShrink:0}}/>
+  );
+}
 
 const SECTIONS = {
   kp:   { name:"Key Partners",           num:"01", accent:"#60a5fa", icon:"🤝", hint:"Key suppliers, alliances & partners"       },
@@ -247,10 +280,11 @@ function useWW(){
 /* ─────────────────────────────────────────────────────────
    HERO HEADER  — fully responsive
 ───────────────────────────────────────────────────────── */
-function HeroHeader({kpis,pct,drawerOpen,onToggleDrawer,onAddEntry,onImport,onExport}){
+function HeroHeader({kpis,pct,drawerOpen,onToggleDrawer,onAddEntry,onImport,onExport,onOpenColors}){
   const w=useWW();
   const mobile=w<640;
   const tablet=w<1024;
+  const {cats}=useContext(CatsContext);
 
   return(
     <header style={{position:"sticky",top:0,zIndex:200,
@@ -308,6 +342,24 @@ function HeroHeader({kpis,pct,drawerOpen,onToggleDrawer,onAddEntry,onImport,onEx
 
         {/* Action buttons */}
         <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
+          {/* Colour configurator */}
+          <button onClick={onOpenColors} className="btn-icon" title="Configure tag colours" style={{
+            background:"rgba(255,255,255,0.05)",
+            border:"1px solid rgba(30,52,90,0.7)",
+            color:"rgba(255,255,255,0.6)",
+            padding:mobile?"7px":"7px 11px",
+            borderRadius:8,fontSize:11,fontWeight:600,cursor:"pointer",
+            display:"flex",alignItems:"center",gap:5,fontFamily:"'Inter',sans-serif",
+            minWidth:mobile?36:undefined,justifyContent:"center",
+          }}>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.3"/>
+              <circle cx="4.2" cy="4.6" r="1" fill="currentColor"/>
+              <circle cx="7.8" cy="4.6" r="1" fill="currentColor"/>
+              <circle cx="6" cy="8" r="1" fill="currentColor"/>
+            </svg>
+            {!mobile&&"Colors"}
+          </button>
           {/* Import JSON */}
           <button onClick={onImport} className="btn-icon" title="Import JSON" style={{
             background:"rgba(255,255,255,0.05)",
@@ -432,12 +484,12 @@ function HeroHeader({kpis,pct,drawerOpen,onToggleDrawer,onAddEntry,onImport,onEx
         }}>
           <span style={{fontSize:7.5,color:"rgba(255,255,255,0.22)",fontFamily:MONO,
             textTransform:"uppercase",letterSpacing:"1px",flexShrink:0}}>Tags:</span>
-          {CATS.map(c=>(
+          {cats.map(c=>(
             <div key={c.key} style={{display:"flex",alignItems:"center",gap:4,
               fontSize:8.5,color:"rgba(255,255,255,0.5)"}}>
               <div style={{width:6,height:6,borderRadius:"50%",background:c.color,
                 flexShrink:0,boxShadow:`0 0 4px ${c.color}80`}}/>
-              {c.label}
+              {c.label&&c.label.trim() ? c.label : null}
             </div>
           ))}
           <span style={{marginLeft:"auto",fontSize:7.5,color:"rgba(255,255,255,0.2)",fontFamily:MONO}}>
@@ -454,7 +506,9 @@ function HeroHeader({kpis,pct,drawerOpen,onToggleDrawer,onAddEntry,onImport,onEx
 ───────────────────────────────────────────────────────── */
 function Chip({entry,onEdit,onDelete,onSegClick,isSegSection,wide,idx=0}){
   const [hov,setHov]=useState(false);
-  const chipColor=cc(entry.cat);
+  const {cats}=useContext(CatsContext);
+  const chipColor=cc(cats,entry.cat);
+  const chipCat=cats.find(c=>c.key===entry.cat);
   const hasLinks=(entry.segs||[]).length>0;
   return(
     <div
@@ -478,9 +532,10 @@ function Chip({entry,onEdit,onDelete,onSegClick,isSegSection,wide,idx=0}){
     >
       {/* Row 1: badge + seg tag + spacer + action buttons */}
       <div style={{display:"flex",alignItems:"center",gap:4,flexWrap:"nowrap",minWidth:0}}>
-        <span style={{fontSize:7.5,fontWeight:700,fontFamily:MONO,textTransform:"uppercase",letterSpacing:".5px",color:chipColor,background:`${chipColor}18`,border:`1px solid ${chipColor}55`,padding:"2px 5px",borderRadius:3,flexShrink:0,whiteSpace:"nowrap",lineHeight:1.6}}>
-          {cl(entry.cat)}
+        <span style={{fontSize:7.5,fontWeight:700,fontFamily:MONO,textTransform:"uppercase",letterSpacing:".5px",color:chipColor,background:`${chipColor}18`,border:`1px solid ${chipColor}55`,padding:"2px 5px",borderRadius:3,flexShrink:0,whiteSpace:"nowrap",lineHeight:1.6,display:chipCat&&!(chipCat.label&&chipCat.label.trim())?"none":"inline-block"}}>
+          {cl(cats,entry.cat)}
         </span>
+        {chipCat&&!(chipCat.label&&chipCat.label.trim())&&<CatTag cat={chipCat} size="sm"/>}
         {hasLinks&&(
           <span style={{fontSize:7,color:Y,fontFamily:MONO,background:"rgba(255,209,0,0.1)",border:"1px solid rgba(255,209,0,0.3)",padding:"2px 5px",borderRadius:3,whiteSpace:"nowrap",lineHeight:1.6,flexShrink:0}}>
             ⟶ {entry.segs.length}
@@ -598,12 +653,13 @@ function countLinked(state,segId){
 }
 
 function SegMetrics({state,segId}){
+  const {cats}=useContext(CatsContext);
   const bySection=FLOW.map(({sid,color,label})=>{
     const n=(state[sid]||[]).filter(e=>(e.segs||[]).includes(segId)).length;
     return{sid,color,label,n};
   }).filter(x=>x.n>0);
   const total=bySection.reduce((s,x)=>s+x.n,0);
-  const byCat=CATS.map(c=>({...c,n:LINKABLE.reduce((s,sid)=>s+(state[sid]||[]).filter(e=>(e.segs||[]).includes(segId)&&e.cat===c.key).length,0)})).filter(x=>x.n>0);
+  const byCat=cats.map(c=>({...c,n:LINKABLE.reduce((s,sid)=>s+(state[sid]||[]).filter(e=>(e.segs||[]).includes(segId)&&e.cat===c.key).length,0)})).filter(x=>x.n>0);
 
   return(
     <div style={{display:"flex",flexDirection:"column",gap:10,animation:"fadeUp 0.3s ease"}}>
@@ -647,7 +703,7 @@ function SegMetrics({state,segId}){
             {byCat.map(c=>(
               <div key={c.key} style={{display:"flex",alignItems:"center",gap:5,background:`${c.color}14`,border:`1px solid ${c.color}40`,borderRadius:6,padding:"4px 8px"}}>
                 <div style={{width:7,height:7,borderRadius:"50%",background:c.color,flexShrink:0,boxShadow:`0 0 5px ${c.color}80`}}/>
-                <span style={{fontSize:10,color:"#dde6f8",fontWeight:600}}>{c.label}</span>
+                <span style={{fontSize:10,color:"#dde6f8",fontWeight:600}}>{c.label&&c.label.trim()?c.label:"Custom"}</span>
                 <span style={{fontSize:11,color:c.color,fontFamily:MONO,fontWeight:800}}>{c.n}</span>
               </div>
             ))}
@@ -659,8 +715,10 @@ function SegMetrics({state,segId}){
 }
 
 function VisualMap({state,segId,seg}){
+  const {cats}=useContext(CatsContext);
   const W = 720, H = 620;
   const cx = W/2, cy = 64; // segment node position (top centre)
+  const VB_TOP_PAD = 170; // extra headroom so the top section's node/dots never clip
 
   // Build per-section linked entries
   const sections = FLOW.map(({sid,color,label})=>({
@@ -689,10 +747,14 @@ function VisualMap({state,segId,seg}){
 
   const sectionPositions = sections.map((s,i)=>{
     const angle = (Math.PI*2*i)/sectionCount - Math.PI/2;
+    // i===0 always lands exactly at the top (angle = -90°), directly above the
+    // segment node with zero horizontal offset — give it extra clearance so
+    // its ring (and satellite dots) never overlaps the segment's ring.
+    const topExtra = i===0 ? 55 : 0;
     return {
       ...s,
       x: cx + Math.cos(angle)*sectionRadius,
-      y: cy + 90 + Math.sin(angle)*sectionRadius*0.78,
+      y: cy + 90 + Math.sin(angle)*sectionRadius*0.78 - topExtra,
       angle,
     };
   });
@@ -704,6 +766,7 @@ function VisualMap({state,segId,seg}){
   const [zoom,setZoom] = useState(1);
   const [pan,setPan]   = useState({x:0,y:0});
   const [panning,setPanning] = useState(false);
+  const [didDrag,setDidDrag] = useState(false);
   const panStartRef = useRef({x:0,y:0,panX:0,panY:0});
   const viewportRef = useRef(null);
 
@@ -714,20 +777,25 @@ function VisualMap({state,segId,seg}){
   const zoomOut = ()=>setZoom(z=>clampZoom(+(z-0.25).toFixed(2)));
   const zoomReset = ()=>{setZoom(1);setPan({x:0,y:0});};
 
+  // Reset the view whenever a different segment is opened
+  useEffect(()=>{ setZoom(1); setPan({x:0,y:0}); },[segId]);
+
   const onWheel = e=>{
     e.preventDefault();
-    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+    const delta = e.deltaY > 0 ? -0.12 : 0.12;
     setZoom(z=>clampZoom(+(z+delta).toFixed(2)));
   };
 
   const startPan = (clientX,clientY)=>{
     setPanning(true);
+    setDidDrag(false);
     panStartRef.current = {x:clientX,y:clientY,panX:pan.x,panY:pan.y};
     const onMove = e=>{
       const cx = e.touches ? e.touches[0].clientX : e.clientX;
       const cy = e.touches ? e.touches[0].clientY : e.clientY;
       const dx = cx - panStartRef.current.x;
       const dy = cy - panStartRef.current.y;
+      if(Math.abs(dx)>3||Math.abs(dy)>3) setDidDrag(true);
       setPan({x:panStartRef.current.panX+dx, y:panStartRef.current.panY+dy});
     };
     const onUp = ()=>{
@@ -745,13 +813,44 @@ function VisualMap({state,segId,seg}){
 
   return(
     <div style={{background:"rgba(255,255,255,0.025)",border:"1px solid rgba(30,52,90,0.55)",borderRadius:10,overflow:"hidden",animation:"fadeUp 0.3s ease"}}>
-      <div style={{padding:"8px 12px",borderBottom:"1px solid rgba(30,52,90,0.5)",background:"rgba(255,255,255,0.02)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+      <div style={{padding:"8px 12px",borderBottom:"1px solid rgba(30,52,90,0.5)",background:"rgba(255,255,255,0.02)",display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,flexWrap:"wrap"}}>
         <div style={{fontSize:8,color:"rgba(255,255,255,0.35)",fontFamily:MONO,textTransform:"uppercase",letterSpacing:1}}>Detailed Link Map</div>
-        <div style={{fontSize:8,color:"rgba(255,255,255,0.3)",fontFamily:MONO}}>{total} connections</div>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <div style={{fontSize:8,color:"rgba(255,255,255,0.3)",fontFamily:MONO}}>{total} connections</div>
+          <div style={{display:"flex",alignItems:"center",gap:2,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(30,52,90,0.6)",borderRadius:7,padding:2}}>
+            <button onClick={zoomOut} title="Zoom out" disabled={zoom<=ZOOM_MIN}
+              style={{width:20,height:20,borderRadius:5,border:"none",background:"transparent",
+                color:zoom<=ZOOM_MIN?"rgba(255,255,255,0.15)":"#c8d4ed",cursor:zoom<=ZOOM_MIN?"default":"pointer",
+                fontSize:13,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>–</button>
+            <div onClick={zoomReset} title="Reset view" style={{fontSize:8,fontFamily:MONO,color:"rgba(255,255,255,0.45)",
+              width:34,textAlign:"center",cursor:"pointer",userSelect:"none"}}>{Math.round(zoom*100)}%</div>
+            <button onClick={zoomIn} title="Zoom in" disabled={zoom>=ZOOM_MAX}
+              style={{width:20,height:20,borderRadius:5,border:"none",background:"transparent",
+                color:zoom>=ZOOM_MAX?"rgba(255,255,255,0.15)":"#c8d4ed",cursor:zoom>=ZOOM_MAX?"default":"pointer",
+                fontSize:13,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>+</button>
+          </div>
+        </div>
       </div>
 
-      <div style={{overflowX:"auto",overflowY:"hidden",padding:"10px"}}>
-        <svg viewBox={`0 0 ${W} ${H}`} style={{width:"100%",minWidth:560,height:"auto",display:"block"}}>
+      <div
+        ref={viewportRef}
+        onWheel={onWheel}
+        onMouseDown={e=>{ if(e.button!==0) return; e.preventDefault(); startPan(e.clientX,e.clientY); }}
+        onTouchStart={e=>{ const t=e.touches[0]; startPan(t.clientX,t.clientY); }}
+        style={{
+          position:"relative",overflow:"hidden",padding:"10px",
+          height:420,touchAction:"none",
+          cursor:panning?"grabbing":"grab",
+          userSelect:"none",
+          background:"radial-gradient(circle at 50% 20%, rgba(255,209,0,0.03), transparent 60%)",
+        }}>
+        <svg viewBox={`0 ${-VB_TOP_PAD} ${W} ${H+VB_TOP_PAD}`} style={{
+            width:"100%",height:"100%",display:"block",
+            transform:`translate(${pan.x}px,${pan.y}px) scale(${zoom})`,
+            transformOrigin:"center center",
+            transition:panning?"none":"transform .12s ease-out",
+            pointerEvents:panning?"none":"auto",
+          }}>
           <defs>
             <radialGradient id="vm-glow" cx="50%" cy="50%" r="50%">
               <stop offset="0%" stopColor="#ffd100" stopOpacity="0.18"/>
@@ -837,7 +936,7 @@ function VisualMap({state,segId,seg}){
               const localAngle = sec.angle + (i-(n-1)/2) * (spread/Math.max(n-1,1) || 0);
               const ex = sec.x + Math.cos(localAngle)*entryRadius;
               const ey = sec.y + Math.sin(localAngle)*entryRadius*0.85;
-              const eColor = cc(e.cat);
+              const eColor = cc(cats,e.cat);
               const isHover = hoveredEntry?.id===e.id;
               return(
                 <g key={e.id}
@@ -868,9 +967,9 @@ function VisualMap({state,segId,seg}){
             return(
               <g style={{pointerEvents:"none"}}>
                 <rect x={boxX} y={boxY} width={boxW} height={34} rx={6}
-                  fill="rgba(6,9,15,0.96)" stroke={cc(hoveredEntry.cat)} strokeWidth="1"/>
-                <text x={boxX+8} y={boxY+13} fontSize="7" fontFamily="monospace" fontWeight="700" fill={cc(hoveredEntry.cat)}>
-                  {cl(hoveredEntry.cat)}
+                  fill="rgba(6,9,15,0.96)" stroke={cc(cats,hoveredEntry.cat)} strokeWidth="1"/>
+                <text x={boxX+8} y={boxY+13} fontSize="7" fontFamily="monospace" fontWeight="700" fill={cc(cats,hoveredEntry.cat)}>
+                  {cl(cats,hoveredEntry.cat)||"Custom"}
                 </text>
                 <text x={boxX+8} y={boxY+25} fontSize="8.5" fill="#dde6f8">
                   {text}
@@ -882,13 +981,14 @@ function VisualMap({state,segId,seg}){
       </div>
 
       <div style={{padding:"8px 12px 12px",fontSize:8.5,color:"rgba(255,255,255,0.3)",fontFamily:MONO,textAlign:"center"}}>
-        Hover dots to preview each linked entry
+        Hover dots to preview each linked entry · Drag to pan · Scroll or use +/– to zoom
       </div>
     </div>
   );
 }
 
 function StoryDrawer({state,activeSegId,onSelectSeg,onClose}){
+  const {cats}=useContext(CatsContext);
   const segs=state.cs??[];
   const seg=segs.find(s=>s.id===activeSegId);
   const [expandedSid,setExpandedSid]=useState(null);
@@ -943,7 +1043,7 @@ function StoryDrawer({state,activeSegId,onSelectSeg,onClose}){
                   <span style={{fontSize:16,flexShrink:0}}>👤</span>
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontSize:11.5,fontWeight:600,color:"#dde6f8",lineHeight:1.4,wordBreak:"break-word"}}>{s.text}</div>
-                    <div style={{fontSize:9,color:cc(s.cat),fontFamily:MONO,marginTop:2}}>{cl(s.cat)}</div>
+                    <div style={{fontSize:9,color:cc(cats,s.cat),fontFamily:MONO,marginTop:2}}>{cl(cats,s.cat)||"●"}</div>
                   </div>
                   <div style={{textAlign:"right",flexShrink:0}}>
                     <div style={{fontSize:18,fontWeight:900,color:linked>0?"#fff":"rgba(255,255,255,0.2)",fontFamily:MONO,lineHeight:1}}>{linked}</div>
@@ -965,7 +1065,7 @@ function StoryDrawer({state,activeSegId,onSelectSeg,onClose}){
             {/* Segment banner */}
             <div style={{background:"linear-gradient(135deg,rgba(74,222,128,0.14),rgba(74,222,128,0.04))",border:"1px solid rgba(74,222,128,0.25)",borderRadius:10,padding:"11px 14px",animation:"fadeUp 0.2s ease"}}>
               <div style={{fontSize:14,fontWeight:700,color:"#fff",lineHeight:1.35,wordBreak:"break-word"}}>{seg.text}</div>
-              <span style={{display:"inline-block",marginTop:5,fontSize:8,color:"#4ade80",fontFamily:MONO,background:"rgba(74,222,128,0.12)",border:"1px solid rgba(74,222,128,0.3)",padding:"2px 6px",borderRadius:3,textTransform:"uppercase",letterSpacing:.5}}>{cl(seg.cat)}</span>
+              <span style={{display:"inline-block",marginTop:5,fontSize:8,color:"#4ade80",fontFamily:MONO,background:"rgba(74,222,128,0.12)",border:"1px solid rgba(74,222,128,0.3)",padding:"2px 6px",borderRadius:3,textTransform:"uppercase",letterSpacing:.5}}>{cl(cats,seg.cat)||"Custom"}</span>
             </div>
 
             {/* KPI metrics */}
@@ -991,10 +1091,10 @@ function StoryDrawer({state,activeSegId,onSelectSeg,onClose}){
                     {expanded&&(
                       <div style={{display:"flex",flexDirection:"column",gap:4,padding:"4px 12px 10px",animation:"fadeIn 0.18s ease"}}>
                         {items.map(e=>{
-                          const eColor=cc(e.cat);
+                          const eCat=cats.find(c=>c.key===e.cat);
                           return(
                             <div key={e.id} style={{display:"flex",flexDirection:"column",gap:3,padding:"6px 9px",background:"rgba(255,255,255,0.04)",borderRadius:6,borderLeft:`2px solid ${color}`}}>
-                              <span style={{fontSize:7.5,color:eColor,fontFamily:MONO,background:`${eColor}18`,border:`1px solid ${eColor}45`,padding:"1.5px 5px",borderRadius:3,textTransform:"uppercase",letterSpacing:.5,alignSelf:"flex-start",lineHeight:1.6}}>{cl(e.cat)}</span>
+                              <CatTag cat={eCat} size="sm"/>
                               <span style={{fontSize:11,color:"#dde6f8",lineHeight:1.45,wordBreak:"break-word"}}>{e.text}</span>
                             </div>
                           );
@@ -1022,6 +1122,7 @@ function StoryDrawer({state,activeSegId,onSelectSeg,onClose}){
    MODAL
 ───────────────────────────────────────────────────────── */
 function Modal({open,onClose,onSave,sid,editEntry,allSegs}){
+  const {cats}=useContext(CatsContext);
   const [text,setText]=useState("");
   const [cat,setCat]=useState("medium");
   const [segs,setSegs]=useState(new Set());
@@ -1032,10 +1133,10 @@ function Modal({open,onClose,onSave,sid,editEntry,allSegs}){
     if(open&&(sid!==prevSid.current||editEntry!==prevEdit.current)){
       prevSid.current=sid;prevEdit.current=editEntry;
       setText(editEntry?.text??"");
-      setCat(editEntry?.cat??"medium");
+      setCat(editEntry?.cat ?? cats[0]?.key ?? "medium");
       setSegs(new Set(editEntry?.segs??[]));
     }
-  },[open,sid,editEntry]);
+  },[open,sid,editEntry,cats]);
 
   if(!open) return null;
   const s=SECTIONS[sid]??{};
@@ -1064,16 +1165,19 @@ function Modal({open,onClose,onSave,sid,editEntry,allSegs}){
           <div>
             <label style={{display:"block",fontSize:9,fontWeight:700,color:"rgba(255,255,255,0.45)",textTransform:"uppercase",letterSpacing:.8,marginBottom:7,fontFamily:MONO}}>Category / Priority</label>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:5}}>
-              {CATS.map(c=>(
+              {cats.map(c=>{
+                const hasLabel=!!(c.label&&c.label.trim());
+                return(
                 <div key={c.key} onClick={()=>setCat(c.key)} style={{display:"flex",alignItems:"center",gap:8,background:cat===c.key?`${c.color}12`:"rgba(255,255,255,.03)",border:`1px solid ${cat===c.key?c.color:"rgba(30,52,90,0.6)"}`,borderRadius:8,padding:"7px 10px",cursor:"pointer",transition:"all .15s"}}>
-                  <div style={{width:9,height:9,borderRadius:"50%",background:c.color,flexShrink:0,boxShadow:cat===c.key?`0 0 8px ${c.color}80`:"none"}}/>
+                  <div style={{width:9,height:9,borderRadius:hasLabel?"50%":3,background:c.color,flexShrink:0,boxShadow:cat===c.key?`0 0 8px ${c.color}80`:"none"}}/>
                   <div style={{flex:1}}>
-                    <div style={{fontSize:11.5,fontWeight:600,color:"#dde6f8"}}>{c.label}</div>
-                    <div style={{fontSize:8.5,color:"rgba(255,255,255,0.4)"}}>{c.desc}</div>
+                    <div style={{fontSize:11.5,fontWeight:600,color:"#dde6f8"}}>{hasLabel?c.label:"Colour tag"}</div>
+                    <div style={{fontSize:8.5,color:"rgba(255,255,255,0.4)"}}>{c.desc||"No label — colour only"}</div>
                   </div>
                   {cat===c.key&&<span style={{fontSize:12,color:c.color,fontWeight:700}}>✓</span>}
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
           {showLink&&(
@@ -1109,6 +1213,102 @@ function Toast({msg,show}){
     <div style={{position:"fixed",bottom:24,right:24,zIndex:600,background:"rgba(8,12,24,0.97)",border:"1px solid rgba(60,100,170,0.85)",color:"#dde6f8",padding:"10px 15px 10px 11px",borderRadius:9,fontSize:11.5,fontWeight:500,display:"flex",alignItems:"center",gap:9,boxShadow:"0 8px 32px rgba(0,0,0,.55)",transform:show?"translateY(0)":"translateY(10px)",opacity:show?1:0,transition:"opacity .2s,transform .2s",pointerEvents:"none"}}>
       <div style={{width:3,height:28,background:Y,borderRadius:99,flexShrink:0,boxShadow:`0 0 8px ${Y}80`}}/>
       {msg}
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────
+   COLOUR CONFIGURATOR — customise the category colour/label map
+───────────────────────────────────────────────────────── */
+function ColorConfigModal({open,onClose,cats,setCats}){
+  const [draft,setDraft]=useState(cats);
+  const prevOpen=useRef(false);
+
+  // Re-sync the draft whenever the modal is (re-)opened so stale edits from a
+  // previous session don't leak in, but keep in-progress edits while open.
+  useEffect(()=>{
+    if(open&&!prevOpen.current) setDraft(cats);
+    prevOpen.current=open;
+  },[open,cats]);
+
+  if(!open) return null;
+
+  const updateField=(key,field,value)=>{
+    setDraft(prev=>prev.map(c=>c.key===key?{...c,[field]:value}:c));
+  };
+  const removeCat=key=>setDraft(prev=>prev.filter(c=>c.key!==key));
+  const addCat=()=>{
+    const palette=["#f472b6","#34d399","#f59e0b","#818cf8","#2dd4bf","#fb7185","#a3e635"];
+    const color=palette[draft.length%palette.length];
+    setDraft(prev=>[...prev,{key:mkCatKey(),color,label:"",desc:""}]);
+  };
+  const doSave=()=>{ setCats(draft.length?draft:DEFAULT_CATS); onClose(); };
+  const doReset=()=>setDraft(DEFAULT_CATS);
+  const doCancel=()=>{ setDraft(cats); onClose(); };
+
+  return(
+    <div onClick={e=>{if(e.target===e.currentTarget)doCancel();}} style={{position:"fixed",inset:0,background:"rgba(1,3,10,0.86)",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:20,animation:"fadeIn 0.18s ease"}}>
+      <div style={{background:"rgba(8,12,24,0.98)",border:"1px solid rgba(60,100,170,0.85)",borderRadius:14,width:"100%",maxWidth:560,boxShadow:"0 40px 100px rgba(0,0,0,.75)",overflow:"hidden",animation:"fadeUp 0.22s ease"}}>
+        <div style={{background:"rgba(255,255,255,0.03)",borderBottom:"1px solid rgba(30,52,90,0.6)",padding:"18px 22px 14px",position:"relative"}}>
+          <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:Y}}/>
+          <div style={{fontSize:8,fontFamily:MONO,color:Y,textTransform:"uppercase",letterSpacing:1.5,marginBottom:3}}>CONFIGURE</div>
+          <div style={{fontSize:16,fontWeight:700,color:"#fff",letterSpacing:"-.2px"}}>Colour & Label Mapping</div>
+          <div style={{fontSize:10,color:"rgba(255,255,255,0.45)",marginTop:2}}>
+            Pick any colour for each tag. Leave the label blank to use it as a plain colour marker — handy for threading related cards together without a fixed name.
+          </div>
+          <button onClick={doCancel} style={{position:"absolute",top:16,right:18,background:"rgba(255,255,255,.04)",border:"1px solid rgba(30,52,90,0.6)",color:"rgba(255,255,255,0.5)",width:26,height:26,borderRadius:5,cursor:"pointer",fontSize:15,display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+        </div>
+
+        <div style={{padding:"14px 22px",display:"flex",flexDirection:"column",gap:8,maxHeight:"56vh",overflowY:"auto"}}>
+          {draft.map(c=>{
+            const hasLabel=!!(c.label&&c.label.trim());
+            return(
+              <div key={c.key} style={{display:"flex",alignItems:"center",gap:8,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(30,52,90,0.6)",borderRadius:8,padding:"8px 10px"}}>
+                {/* colour swatch / native picker */}
+                <label title="Pick colour" style={{position:"relative",width:26,height:26,borderRadius:6,flexShrink:0,cursor:"pointer",
+                  background:c.color,border:"1px solid rgba(255,255,255,0.35)",boxShadow:`0 0 8px ${c.color}80`,overflow:"hidden"}}>
+                  <input type="color" value={c.color} onChange={e=>updateField(c.key,"color",e.target.value)}
+                    style={{position:"absolute",inset:0,width:"100%",height:"100%",opacity:0,cursor:"pointer",border:"none",padding:0}}/>
+                </label>
+                {/* label text — optional */}
+                <input value={c.label} onChange={e=>updateField(c.key,"label",e.target.value)}
+                  placeholder="No text — colour only"
+                  style={{flex:1,minWidth:0,background:"rgba(255,255,255,0.04)",border:`1px solid ${hasLabel?"rgba(30,52,90,0.7)":"rgba(255,209,0,0.3)"}`,
+                    color:"#dde6f8",padding:"6px 9px",borderRadius:6,fontSize:11.5,fontFamily:"'Inter',sans-serif",outline:"none"}}/>
+                {/* preview */}
+                <div style={{flexShrink:0,minWidth:64,display:"flex",justifyContent:"center"}}>
+                  <CatTag cat={c} size="sm"/>
+                </div>
+                {/* remove */}
+                <button onClick={()=>removeCat(c.key)} title="Remove tag" className="btn-icon"
+                  style={{width:24,height:24,borderRadius:5,border:"1px solid transparent",background:"transparent",color:"rgba(255,255,255,0.3)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}
+                  onMouseEnter={e=>{e.currentTarget.style.color="#ff4d4d";e.currentTarget.style.background="rgba(255,77,77,0.12)";e.currentTarget.style.borderColor="rgba(255,77,77,0.45)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.color="rgba(255,255,255,0.3)";e.currentTarget.style.background="transparent";e.currentTarget.style.borderColor="transparent";}}>
+                  <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+                    <path d="M2 3h7M4.5 3V2h2v1M3.5 3l.5 6h3l.5-6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
+              </div>
+            );
+          })}
+          {draft.length===0&&(
+            <div style={{textAlign:"center",opacity:.45,padding:"18px 0",fontSize:11,color:"rgba(255,255,255,0.5)"}}>
+              No tags configured — add one below, or reset to the defaults.
+            </div>
+          )}
+          <button onClick={addCat} style={{alignSelf:"flex-start",background:"rgba(255,209,0,0.1)",border:"1px solid rgba(255,209,0,0.3)",color:Y,padding:"7px 12px",borderRadius:7,fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"'Inter',sans-serif",display:"flex",alignItems:"center",gap:6}}>
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1v9M1 5.5h9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
+            Add tag
+          </button>
+        </div>
+
+        <div style={{display:"flex",gap:7,borderTop:"1px solid rgba(30,52,90,0.6)",padding:"12px 22px",background:"rgba(255,255,255,0.02)"}}>
+          <button onClick={doReset} title="Restore the default 8 tags" style={{background:"transparent",border:"1px solid rgba(30,52,90,0.6)",color:"rgba(255,255,255,0.5)",padding:"10px 14px",borderRadius:8,fontSize:11.5,fontWeight:600,cursor:"pointer",fontFamily:"'Inter',sans-serif"}}>Reset defaults</button>
+          <div style={{flex:1}}/>
+          <button onClick={doCancel} style={{background:"transparent",border:"1px solid rgba(30,52,90,0.6)",color:"rgba(255,255,255,0.5)",padding:"10px 16px",borderRadius:8,fontSize:12,fontWeight:500,cursor:"pointer",fontFamily:"'Inter',sans-serif"}}>Cancel</button>
+          <button onClick={doSave} style={{background:Y,border:"none",color:"#060606",padding:"10px 18px",borderRadius:8,fontSize:12.5,fontWeight:800,cursor:"pointer",fontFamily:"'Inter',sans-serif",boxShadow:`0 0 18px rgba(255,209,0,0.3)`}}>Save Colours</button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -1172,7 +1372,8 @@ function parseImport(raw){
 /* ─────────────────────────────────────────────────────────
    BUILD EXPORT  — maps internal state → portable JSON
 ───────────────────────────────────────────────────────── */
-function buildExport(state, canvasTitle){
+function buildExport(state, canvasTitle, cats){
+  cats = cats || DEFAULT_CATS;
   const allEntries = Object.values(state).flat();
   return {
     canvas:{
@@ -1187,17 +1388,18 @@ function buildExport(state, canvasTitle){
         Object.entries(SECTIONS).map(([k,s])=>[ s.name, (state[k]||[]).length ])
       ),
       by_category: Object.fromEntries(
-        CATS.map(c=>[c.label, allEntries.filter(e=>e.cat===c.key).length])
+        cats.map(c=>[c.label&&c.label.trim() ? c.label : c.key, allEntries.filter(e=>e.cat===c.key).length])
       ),
       authors: [...new Set(allEntries.map(e=>e.author).filter(Boolean))],
     },
+    color_config: cats,
     notes: Object.entries(state).flatMap(([sid,entries])=>
       entries.map((e,i)=>({
         id:         e.id,
         section:    sid,
         content:    e.text,
         color:      CAT_TO_NC[e.cat] ?? "nc-white",
-        category:   cl(e.cat),
+        category:   cl(cats,e.cat) || e.cat,
         author:     e.author ?? "",
         position:   i,
         linked_segments: (e.segs||[]).map(segId=>{
@@ -1676,11 +1878,27 @@ export default function App(){
   const [canvasTitle,setCanvasTitle]=useState("");
   const [modal,setModal]=useState({open:false,sid:"vp",editEntry:null});
   const [importOpen,setImportOpen]=useState(false);
+  const [colorsOpen,setColorsOpen]=useState(false);
   const [drawerOpen,setDrawerOpen]=useState(false);
   const [drawerWidth,setDrawerWidth]=useState(420);
   const [activeSegId,setActiveSegId]=useState(null);
   const [toast,setToast]=useState({msg:"",show:false});
   const toastTimer=useRef(null);
+
+  // Custom colour/label mapping — persisted locally so a user's palette survives reloads
+  const [cats,setCats]=useState(()=>{
+    try{
+      const saved=localStorage.getItem("acca-bmc-cat-config");
+      if(saved){
+        const parsed=JSON.parse(saved);
+        if(Array.isArray(parsed)&&parsed.length) return parsed;
+      }
+    }catch{}
+    return DEFAULT_CATS;
+  });
+  useEffect(()=>{
+    try{ localStorage.setItem("acca-bmc-cat-config", JSON.stringify(cats)); }catch{}
+  },[cats]);
 
   const showToast=useCallback(msg=>{
     setToast({msg,show:true});
@@ -1734,7 +1952,7 @@ export default function App(){
 
   /* ── EXPORT ── */
   const handleExport=useCallback(()=>{
-    const data=buildExport(state,canvasTitle||"ACCA BMC Export");
+    const data=buildExport(state,canvasTitle||"ACCA BMC Export",cats);
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const a=document.createElement("a");
     a.href=URL.createObjectURL(blob);
@@ -1743,7 +1961,7 @@ export default function App(){
     a.click();
     URL.revokeObjectURL(a.href);
     showToast("Canvas exported as JSON");
-  },[state,canvasTitle,showToast]);
+  },[state,canvasTitle,cats,showToast]);
 
   const all=Object.values(state).flat();
   const filled=Object.keys(SECTIONS).filter(k=>k!=="notes"&&(state[k]?.length||0)>0).length;
@@ -1759,13 +1977,15 @@ export default function App(){
   ];
 
   return(
+    <CatsContext.Provider value={{cats,setCats}}>
     <div style={{fontFamily:"'Inter',sans-serif",background:"#06090f",color:"#dde6f8",minHeight:"100vh",position:"relative"}}>
       <BimBg/>
       <HeroHeader kpis={kpis} pct={pct} drawerOpen={drawerOpen}
         onToggleDrawer={()=>{setDrawerOpen(v=>!v);if(!drawerOpen)setActiveSegId(null);}}
         onAddEntry={()=>openAdd("vp")}
         onImport={()=>setImportOpen(true)}
-        onExport={handleExport}/>
+        onExport={handleExport}
+        onOpenColors={()=>setColorsOpen(true)}/>
 
       <CanvasLayout
         state={state} drawerOpen={drawerOpen}
@@ -1778,7 +1998,9 @@ export default function App(){
 
       <Modal open={modal.open} onClose={closeModal} onSave={handleSave} sid={modal.sid} editEntry={modal.editEntry} allSegs={state.cs??[]}/>
       <ImportModal open={importOpen} onClose={()=>setImportOpen(false)} onConfirm={handleImportConfirm}/>
+      <ColorConfigModal open={colorsOpen} onClose={()=>setColorsOpen(false)} cats={cats} setCats={setCats}/>
       <Toast msg={toast.msg} show={toast.show}/>
     </div>
+    </CatsContext.Provider>
   );
 }
