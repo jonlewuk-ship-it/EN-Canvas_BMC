@@ -280,7 +280,7 @@ function useWW(){
 /* ─────────────────────────────────────────────────────────
    HERO HEADER  — fully responsive
 ───────────────────────────────────────────────────────── */
-function HeroHeader({kpis,pct,drawerOpen,onToggleDrawer,onAddEntry,onImport,onExport,onOpenColors}){
+function HeroHeader({kpis,pct,drawerOpen,onToggleDrawer,onAddEntry,onImport,onExport,onOpenColors,onOpenReport}){
   const w=useWW();
   const mobile=w<640;
   const tablet=w<1024;
@@ -359,6 +359,23 @@ function HeroHeader({kpis,pct,drawerOpen,onToggleDrawer,onAddEntry,onImport,onEx
               <circle cx="6" cy="8" r="1" fill="currentColor"/>
             </svg>
             {!mobile&&"Colors"}
+          </button>
+          {/* PDF report by customer segment */}
+          <button onClick={onOpenReport} className="btn-icon" title="Export success story as PDF" style={{
+            background:"rgba(255,255,255,0.05)",
+            border:"1px solid rgba(30,52,90,0.7)",
+            color:"rgba(255,255,255,0.6)",
+            padding:mobile?"7px":"7px 11px",
+            borderRadius:8,fontSize:11,fontWeight:600,cursor:"pointer",
+            display:"flex",alignItems:"center",gap:5,fontFamily:"'Inter',sans-serif",
+            minWidth:mobile?36:undefined,justifyContent:"center",
+          }}>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M2.5 1h4.5l2 2v8h-6.5z" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round"/>
+              <path d="M7 1v2h2" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round"/>
+              <path d="M3.6 6.4h3.4M3.6 8.1h3.4" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
+            </svg>
+            {!mobile&&"PDF Report"}
           </button>
           {/* Import JSON */}
           <button onClick={onImport} className="btn-icon" title="Import JSON" style={{
@@ -1314,6 +1331,82 @@ function ColorConfigModal({open,onClose,cats,setCats}){
 }
 
 /* ─────────────────────────────────────────────────────────
+   PDF REPORT MODAL — choose a customer segment to export
+───────────────────────────────────────────────────────── */
+function ReportExportModal({open,onClose,state,cats,canvasTitle}){
+  const [sel,setSel]=useState(new Set());
+  const segs=state.cs||[];
+
+  useEffect(()=>{ if(open) setSel(new Set()); },[open]);
+
+  if(!open) return null;
+
+  const toggle=id=>setSel(prev=>{
+    const n=new Set(prev);
+    n.has(id)?n.delete(id):n.add(id);
+    return n;
+  });
+  const selectAll=()=>setSel(new Set(segs.map(s=>s.id)));
+
+  const linkedCount=seg=>LINKABLE.reduce((n,sid)=>n+(state[sid]||[]).filter(e=>(e.segs||[]).includes(seg.id)).length,0);
+
+  const doGenerate=()=>{
+    if(!sel.size) return;
+    const ok=exportSegmentReportPDF(state,cats,canvasTitle,[...sel]);
+    if(ok) onClose();
+  };
+  const doGenerateAll=()=>{
+    if(!segs.length) return;
+    const ok=exportSegmentReportPDF(state,cats,canvasTitle,"all");
+    if(ok) onClose();
+  };
+
+  return(
+    <div onClick={e=>{if(e.target===e.currentTarget)onClose();}} style={{position:"fixed",inset:0,background:"rgba(1,3,10,0.86)",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:20,animation:"fadeIn 0.18s ease"}}>
+      <div style={{background:"rgba(8,12,24,0.98)",border:"1px solid rgba(60,100,170,0.85)",borderRadius:14,width:"100%",maxWidth:480,boxShadow:"0 40px 100px rgba(0,0,0,.75)",overflow:"hidden",animation:"fadeUp 0.22s ease"}}>
+        <div style={{background:"rgba(255,255,255,0.03)",borderBottom:"1px solid rgba(30,52,90,0.6)",padding:"18px 22px 14px",position:"relative"}}>
+          <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:Y}}/>
+          <div style={{fontSize:8,fontFamily:MONO,color:Y,textTransform:"uppercase",letterSpacing:1.5,marginBottom:3}}>EXPORT</div>
+          <div style={{fontSize:16,fontWeight:700,color:"#fff",letterSpacing:"-.2px"}}>Success Story PDF Report</div>
+          <div style={{fontSize:10,color:"rgba(255,255,255,0.45)",marginTop:2}}>
+            Pick one or more customer segments. Opens your browser's print dialog — choose "Save as PDF" as the destination.
+          </div>
+          <button onClick={onClose} style={{position:"absolute",top:16,right:18,background:"rgba(255,255,255,.04)",border:"1px solid rgba(30,52,90,0.6)",color:"rgba(255,255,255,0.5)",width:26,height:26,borderRadius:5,cursor:"pointer",fontSize:15,display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+        </div>
+
+        <div style={{padding:"14px 22px",display:"flex",flexDirection:"column",gap:7,maxHeight:"50vh",overflowY:"auto"}}>
+          {segs.length===0&&(
+            <div style={{textAlign:"center",opacity:.45,padding:"18px 0",fontSize:11,color:"rgba(255,255,255,0.5)"}}>
+              No customer segments yet — add one in the Customer Segments column first.
+            </div>
+          )}
+          {segs.map(seg=>{
+            const checked=sel.has(seg.id);
+            const n=linkedCount(seg);
+            return(
+              <div key={seg.id} onClick={()=>toggle(seg.id)} style={{display:"flex",alignItems:"center",gap:10,background:checked?"rgba(255,209,0,0.08)":"rgba(255,255,255,0.03)",border:`1px solid ${checked?"rgba(255,209,0,0.5)":"rgba(30,52,90,0.6)"}`,borderRadius:8,padding:"9px 12px",cursor:"pointer",transition:"all .15s"}}>
+                <div style={{width:16,height:16,borderRadius:4,border:`1.5px solid ${checked?Y:"rgba(255,255,255,0.3)"}`,background:checked?Y:"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"#060606",fontWeight:800}}>{checked?"✓":""}</div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:12,fontWeight:600,color:"#dde6f8",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{seg.text}</div>
+                </div>
+                <div style={{fontSize:9,fontFamily:MONO,color:"rgba(255,255,255,0.35)",flexShrink:0}}>{n} linked</div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div style={{display:"flex",gap:7,borderTop:"1px solid rgba(30,52,90,0.6)",padding:"12px 22px",background:"rgba(255,255,255,0.02)"}}>
+          <button onClick={selectAll} disabled={!segs.length} style={{background:"transparent",border:"1px solid rgba(30,52,90,0.6)",color:"rgba(255,255,255,0.5)",padding:"10px 14px",borderRadius:8,fontSize:11.5,fontWeight:600,cursor:segs.length?"pointer":"default",fontFamily:"'Inter',sans-serif"}}>Select all</button>
+          <div style={{flex:1}}/>
+          <button onClick={doGenerateAll} disabled={!segs.length} title="One combined report, every segment" style={{background:"transparent",border:"1px solid rgba(255,209,0,0.4)",color:Y,padding:"10px 14px",borderRadius:8,fontSize:11.5,fontWeight:700,cursor:segs.length?"pointer":"default",fontFamily:"'Inter',sans-serif"}}>All segments</button>
+          <button onClick={doGenerate} disabled={!sel.size} style={{background:sel.size?Y:"rgba(255,255,255,0.08)",border:"none",color:sel.size?"#060606":"rgba(255,255,255,0.3)",padding:"10px 18px",borderRadius:8,fontSize:12.5,fontWeight:800,cursor:sel.size?"pointer":"default",fontFamily:"'Inter',sans-serif",boxShadow:sel.size?`0 0 18px rgba(255,209,0,0.3)`:"none"}}>Generate PDF ({sel.size})</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────
    COLOUR MAP  (imported JSON nc-* → internal cat key)
 ───────────────────────────────────────────────────────── */
 const NC_TO_CAT = {
@@ -1410,6 +1503,80 @@ function buildExport(state, canvasTitle, cats){
       }))
     ),
   };
+}
+
+/* ─────────────────────────────────────────────────────────
+   PDF REPORT — printable HTML, one per Customer Segment
+   (uses the browser's native print-to-PDF, no extra deps)
+───────────────────────────────────────────────────────── */
+function escapeHtml(str){
+  return String(str??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+}
+
+function segmentReportBlock(seg, state, cats, canvasTitle){
+  const rows = LINKABLE.map(sid=>{
+    const items=(state[sid]||[]).filter(e=>(e.segs||[]).includes(seg.id));
+    if(!items.length) return "";
+    const meta=SECTIONS[sid];
+    const itemsHtml=items.map(e=>{
+      const catObj=cats.find(c=>c.key===e.cat);
+      const color=catObj?.color ?? Y;
+      const label=(catObj?.label&&catObj.label.trim()) ? catObj.label : null;
+      return `<li style="margin:0 0 6px;padding:6px 10px;border-left:3px solid ${color};background:#f6f7fb;border-radius:4px;">
+        ${label?`<span style="display:inline-block;font:700 8px 'Courier New',monospace;letter-spacing:.5px;text-transform:uppercase;color:${color};background:${color}18;border:1px solid ${color}55;padding:1px 5px;border-radius:3px;margin-bottom:4px;">${escapeHtml(label)}</span>`
+              :`<span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${color};margin-bottom:4px;"></span>`}
+        <div style="font-size:12px;color:#1a1f2b;line-height:1.5;">${escapeHtml(e.text)}</div>
+      </li>`;
+    }).join("");
+    return `<div style="margin-bottom:16px;">
+      <div style="font:700 11px 'Courier New',monospace;text-transform:uppercase;letter-spacing:1px;color:${meta.accent};margin-bottom:6px;">
+        ${meta.icon} ${escapeHtml(meta.name)} <span style="color:#8891a5;">(${items.length})</span>
+      </div>
+      <ul style="list-style:none;margin:0;padding:0;">${itemsHtml}</ul>
+    </div>`;
+  }).join("");
+
+  const catObj=cats.find(c=>c.key===seg.cat);
+  const segTag=(catObj?.label&&catObj.label.trim())?escapeHtml(catObj.label):"";
+
+  return `<section style="page-break-after:always;padding:36px 40px;font-family:'Segoe UI',Arial,sans-serif;">
+    <div style="border-bottom:3px solid #ffd100;padding-bottom:14px;margin-bottom:22px;">
+      <div style="font:700 9px 'Courier New',monospace;color:#ffb800;text-transform:uppercase;letter-spacing:2px;">Success Story Report${canvasTitle?" — "+escapeHtml(canvasTitle):""}</div>
+      <h1 style="margin:6px 0 4px;font-size:22px;color:#0e1320;">${escapeHtml(seg.text)}</h1>
+      ${segTag?`<span style="font:700 9px 'Courier New',monospace;text-transform:uppercase;color:#16a34a;background:#dcfce7;border:1px solid #86efac;padding:2px 7px;border-radius:4px;">${segTag}</span>`:""}
+    </div>
+    ${rows || `<p style="color:#8891a5;font-size:13px;">No linked entries for this segment yet.</p>`}
+    <div style="margin-top:26px;font-size:9px;color:#a3abbd;">Generated ${new Date().toLocaleString()}</div>
+  </section>`;
+}
+
+function buildSegmentReportHTML(state, cats, canvasTitle, segIds){
+  const allSegs = state.cs || [];
+  const chosen = segIds==="all" ? allSegs : allSegs.filter(s=>segIds.includes(s.id));
+  const body = chosen.length
+    ? chosen.map(seg=>segmentReportBlock(seg,state,cats,canvasTitle)).join("")
+    : `<p style="padding:40px;font-family:sans-serif;color:#888;">No customer segment selected.</p>`;
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"/>
+    <title>${escapeHtml(canvasTitle||"BMC Success Story Report")}</title>
+    <style>
+      @page{ size:A4; margin:0; }
+      body{ margin:0; background:#fff; }
+      section:last-child{ page-break-after:auto; }
+      @media print{ section{ break-inside:avoid-page; } }
+    </style>
+  </head><body>${body}</body></html>`;
+}
+
+function exportSegmentReportPDF(state, cats, canvasTitle, segIds){
+  const html = buildSegmentReportHTML(state, cats, canvasTitle, segIds);
+  const win = window.open("", "_blank");
+  if(!win){ return false; }
+  win.document.open();
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  setTimeout(()=>{ try{ win.print(); }catch{} }, 300);
+  return true;
 }
 
 /* ─────────────────────────────────────────────────────────
@@ -1874,16 +2041,39 @@ export default function App(){
     return()=>document.head.removeChild(style);
   },[]);
 
-  const [state,setState]=useState(DEMO);
-  const [canvasTitle,setCanvasTitle]=useState("");
+  const CANVAS_KEY = "acca-bmc-canvas-state";
+  const TITLE_KEY  = "acca-bmc-canvas-title";
+
+  const [state,setState]=useState(()=>{
+    try{
+      const saved=localStorage.getItem(CANVAS_KEY);
+      if(saved){
+        const parsed=JSON.parse(saved);
+        if(parsed && typeof parsed==="object") return parsed;
+      }
+    }catch{}
+    return DEMO;
+  });
+  const [canvasTitle,setCanvasTitle]=useState(()=>{
+    try{ return localStorage.getItem(TITLE_KEY) || ""; }catch{ return ""; }
+  });
   const [modal,setModal]=useState({open:false,sid:"vp",editEntry:null});
   const [importOpen,setImportOpen]=useState(false);
   const [colorsOpen,setColorsOpen]=useState(false);
+  const [reportOpen,setReportOpen]=useState(false);
   const [drawerOpen,setDrawerOpen]=useState(false);
   const [drawerWidth,setDrawerWidth]=useState(420);
   const [activeSegId,setActiveSegId]=useState(null);
   const [toast,setToast]=useState({msg:"",show:false});
   const toastTimer=useRef(null);
+
+  // Persist the canvas itself (entries + imports) so a refresh never rolls back to the demo data
+  useEffect(()=>{
+    try{ localStorage.setItem(CANVAS_KEY, JSON.stringify(state)); }catch{}
+  },[state]);
+  useEffect(()=>{
+    try{ localStorage.setItem(TITLE_KEY, canvasTitle||""); }catch{}
+  },[canvasTitle]);
 
   // Custom colour/label mapping — persisted locally so a user's palette survives reloads
   const [cats,setCats]=useState(()=>{
@@ -1985,7 +2175,8 @@ export default function App(){
         onAddEntry={()=>openAdd("vp")}
         onImport={()=>setImportOpen(true)}
         onExport={handleExport}
-        onOpenColors={()=>setColorsOpen(true)}/>
+        onOpenColors={()=>setColorsOpen(true)}
+        onOpenReport={()=>setReportOpen(true)}/>
 
       <CanvasLayout
         state={state} drawerOpen={drawerOpen}
@@ -1999,6 +2190,7 @@ export default function App(){
       <Modal open={modal.open} onClose={closeModal} onSave={handleSave} sid={modal.sid} editEntry={modal.editEntry} allSegs={state.cs??[]}/>
       <ImportModal open={importOpen} onClose={()=>setImportOpen(false)} onConfirm={handleImportConfirm}/>
       <ColorConfigModal open={colorsOpen} onClose={()=>setColorsOpen(false)} cats={cats} setCats={setCats}/>
+      <ReportExportModal open={reportOpen} onClose={()=>setReportOpen(false)} state={state} cats={cats} canvasTitle={canvasTitle}/>
       <Toast msg={toast.msg} show={toast.show}/>
     </div>
     </CatsContext.Provider>
